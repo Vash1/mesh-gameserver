@@ -9,6 +9,8 @@ import (
 	"capnproto.org/go/capnp/v3"
 )
 
+var ShardJoinResponseChan = make(chan *common.ClusterJoinResponseMsg, 10)
+
 func ShardJoinResponse(msg *capnp.Message, source string) {
 	fmt.Println("Handling ShardJoinResponse")
 	rootMsg, err := common.ReadRootClusterJoinResponse(msg)
@@ -17,6 +19,7 @@ func ShardJoinResponse(msg *capnp.Message, source string) {
 	}
 	joinMsg := message.ParseClusterJoinResponseMessage(rootMsg)
 	log.Printf("shard %s is located at: %s", joinMsg.ShardID, fmt.Sprint(joinMsg.Pos))
+	ShardJoinResponseChan <- joinMsg
 }
 
 func ClientGameMessage(msg *capnp.Message, source string) {

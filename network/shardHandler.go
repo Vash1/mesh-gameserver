@@ -15,6 +15,7 @@ type ShardHandler struct {
 	server               *NetServer
 	MasterClient         *NetClient
 	clientConnectionChan chan *connection
+	PoolJoined           chan struct{}
 }
 
 func (c *NetClient) SendUnreliable(msg *capnp.Message) {
@@ -23,15 +24,17 @@ func (c *NetClient) SendUnreliable(msg *capnp.Message) {
 
 }
 
-func (h *NetClient) ListenReliable() {
-	// go h.Listen()
+func (h *NetClient) ListenReliable(PoolJoined chan struct{}) {
 	handler := messageHandler.NewMessageHandler()
 	handler.AddHandler(messageHandler.ShardJoinResponse)
+	go func() {
+		defer close(PoolJoined)
+		<-messageHandler.ShardJoinResponseChan
+		fmt.Println("Joined pool")
+	}()
 	for {
 		handler.HandleMessage(read(h.QuicStream), "master")
 	}
-	// decode(quic.Stream) -> capnp.Message
-	// HandleGameMessage(capnp.Message, channels)
 }
 
 func (c *NetClient) SendReliable(msg *capnp.Message) {
@@ -52,7 +55,8 @@ func NewShardHandler() *ShardHandler {
 		return nil
 	}
 	return &ShardHandler{
-		server: server,
+		server:     server,
+		PoolJoined: make(chan struct{}),
 	}
 }
 

@@ -44,7 +44,7 @@ func main() {
 		return
 	}
 	shard.MasterClient.OpenStream()
-	go shard.MasterClient.ListenReliable()
+	go shard.MasterClient.ListenReliable(shard.PoolJoined)
 	msg, err := message.CreateClusterJoinMessage(common.ClusterJoinRequestMsg{Address: shard.GetAddress()})
 	if err != nil {
 		fmt.Println("Error creating cluster join message")
@@ -52,7 +52,8 @@ func main() {
 	}
 	shard.MasterClient.SendReliable(msg)
 
-	for i := 0; i < 5; i++ {
+	<-shard.PoolJoined
+	for i := 0; i < 2; i++ {
 		go func() {
 			chatMessage := createMsg("stream")
 			unrealiableChatMessage := createMsg("datagram")
