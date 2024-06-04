@@ -4,9 +4,7 @@ import (
 	"base/common"
 	"base/message"
 	"base/network"
-	"fmt"
 	"math/rand/v2"
-	"time"
 
 	"capnproto.org/go/capnp/v3"
 )
@@ -20,11 +18,12 @@ func createMsg() *capnp.Message {
 }
 
 func main() {
-
-	shard := network.NewMasterHandler()
-	fmt.Println("Shard network handler created", shard)
-	go shard.AcceptConnections()
-	go shard.AcceptStreams()
-	time.Sleep(20 * time.Second)
+	master := network.NewMasterHandler()
+	master.ResetRedisShards()
+	go master.AcceptConnections()
+	// redis := redis.NewClient()
+	go master.AcceptStreams()
+	// go master.BroadcastChat()
+	select {}
 
 }

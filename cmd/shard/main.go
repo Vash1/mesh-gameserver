@@ -6,7 +6,6 @@ import (
 	"base/network"
 	"fmt"
 	"math/rand/v2"
-	"sync"
 	"time"
 
 	"capnproto.org/go/capnp/v3"
@@ -21,9 +20,6 @@ func createMsg(source string) *capnp.Message {
 }
 func main() {
 	// redis := redis.NewClient()
-	// redis.Get("key")
-	// redis.Set("key", "t123est")
-	// redis.Get("key")
 
 	// _ = rdb
 	/*
@@ -43,33 +39,27 @@ func main() {
 	// server.AcceptConnections()
 
 	shard := network.NewShardHandler()
-	fmt.Println("Shard network handler created", shard.GetAddress())
-	master := network.NewMasterConn()
-	if master == nil {
+	shard.JoinCluster()
+	if shard.MasterClient == nil {
 		return
 	}
-	master.OpenStream()
+	shard.MasterClient.OpenStream()
+	go shard.MasterClient.ListenReliable()
 	msg, err := message.CreateClusterJoinMessage(common.ClusterJoinRequestMsg{Address: shard.GetAddress()})
 	if err != nil {
 		fmt.Println("Error creating cluster join message")
 		return
 	}
-	master.SendReliable(msg)
+	shard.MasterClient.SendReliable(msg)
 
-	var wg = &sync.WaitGroup{}
-	wg.Add(1)
-	// chatMessage := createMsg()
-	// client.SendReliable(chatMessage)
-	// fmt.Println("Data1 sent successfully.")
-	// time.Sleep(1 * time.Second)
-
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 5; i++ {
 		go func() {
 			chatMessage := createMsg("stream")
 			unrealiableChatMessage := createMsg("datagram")
 			for j := 0; j < 2; j++ {
-				master.SendReliable(chatMessage)
-				master.SendUnreliable(unrealiableChatMessage)
+				shard.MasterClient.SendReliable(chatMessage)
+				shard.MasterClient.SendUnreliable(unrealiableChatMessage)
+				fmt.Println("Data sent successfully.")
 				time.Sleep(1 * time.Second)
 			}
 		}()
@@ -77,7 +67,6 @@ func main() {
 
 	// chatMessage = createMsg()
 	// client.SendReliable(chatMessage)
-	fmt.Println("Data sent successfully.")
 
 	// wg.Wait()
 
@@ -85,6 +74,6 @@ func main() {
 	go shard.AcceptData()
 	// go shard.AcceptStreams()
 	// go shard.AcceptDatagrams()
-	time.Sleep(20 * time.Second)
+	select {}
 
 }

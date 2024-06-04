@@ -84,12 +84,7 @@ func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
 // }
 
 func HandleGameMessage(msg *capnp.Message) {
-	joinMsg, err := common.ReadRootClusterJoinRequest(msg)
-	if err != nil {
-		log.Println("Failed to read game message:", err)
-	}
-	jo := ParseClusterJoinMessage(joinMsg)
-	log.Printf("Received cluster join request: %s", jo.Address)
+	log.Printf("Received chat message:")
 	gameMsg, err := common.ReadRootGameMessage(msg)
 	if err != nil {
 		log.Println("Failed to read game message:", err)
@@ -140,7 +135,7 @@ func ParseClusterJoinMessage(msg common.ClusterJoinRequest) *common.ClusterJoinR
 	}
 }
 
-func CreateClusterJoinResponseMessage(msg common.ClusterJoinResponseMsg) (*capnp.Message, error) {
+func CreateClusterJoinResponseMessage(msg *common.ClusterJoinResponseMsg) (*capnp.Message, error) {
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
@@ -150,7 +145,7 @@ func CreateClusterJoinResponseMessage(msg common.ClusterJoinResponseMsg) (*capnp
 		return nil, err
 	}
 
-	message.SetClusterId(msg.ClusterId)
+	message.SetShardId(msg.ShardID)
 	pos, err := message.NewPos()
 	if err != nil {
 		return nil, err
@@ -162,12 +157,12 @@ func CreateClusterJoinResponseMessage(msg common.ClusterJoinResponseMsg) (*capnp
 }
 
 func ParseClusterJoinResponseMessage(msg common.ClusterJoinResponse) *common.ClusterJoinResponseMsg {
-	clusterId := msg.ClusterId()
+	shardID, _ := msg.ShardId()
 	pos, _ := msg.Pos()
 
 	return &common.ClusterJoinResponseMsg{
-		ClusterId: clusterId,
-		Pos:       common.Pos{X: pos.X(), Y: pos.Y()},
+		ShardID: shardID,
+		Pos:     common.Pos{X: pos.X(), Y: pos.Y()},
 	}
 }
 

@@ -242,24 +242,6 @@ func (p GameMessage_Future) ChatMessage() ChatMessage_Future {
 }
 
 type Position capnp.Struct
-type Position_Which uint16
-
-const (
-	Position_Which_x Position_Which = 0
-	Position_Which_y Position_Which = 1
-)
-
-func (w Position_Which) String() string {
-	const s = "xy"
-	switch w {
-	case Position_Which_x:
-		return s[0:1]
-	case Position_Which_y:
-		return s[1:2]
-
-	}
-	return "Position_Which(" + strconv.FormatUint(uint64(w), 10) + ")"
-}
 
 // Position_TypeID is the unique identifier for the type Position.
 const Position_TypeID = 0x82c063683577d7ae
@@ -295,10 +277,6 @@ func (Position) DecodeFromPtr(p capnp.Ptr) Position {
 func (s Position) ToPtr() capnp.Ptr {
 	return capnp.Struct(s).ToPtr()
 }
-
-func (s Position) Which() Position_Which {
-	return Position_Which(capnp.Struct(s).Uint16(4))
-}
 func (s Position) IsValid() bool {
 	return capnp.Struct(s).IsValid()
 }
@@ -311,27 +289,19 @@ func (s Position) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
 func (s Position) X() int32 {
-	if capnp.Struct(s).Uint16(4) != 0 {
-		panic("Which() != x")
-	}
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
 func (s Position) SetX(v int32) {
-	capnp.Struct(s).SetUint16(4, 0)
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
 func (s Position) Y() int32 {
-	if capnp.Struct(s).Uint16(4) != 1 {
-		panic("Which() != y")
-	}
-	return int32(capnp.Struct(s).Uint32(0))
+	return int32(capnp.Struct(s).Uint32(4))
 }
 
 func (s Position) SetY(v int32) {
-	capnp.Struct(s).SetUint16(4, 1)
-	capnp.Struct(s).SetUint32(0, uint32(v))
+	capnp.Struct(s).SetUint32(4, uint32(v))
 }
 
 // Position_List is a list of Position.
@@ -905,12 +875,12 @@ type ClusterJoinResponse capnp.Struct
 const ClusterJoinResponse_TypeID = 0xcf33420367b84949
 
 func NewClusterJoinResponse(s *capnp.Segment) (ClusterJoinResponse, error) {
-	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1})
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
 	return ClusterJoinResponse(st), err
 }
 
 func NewRootClusterJoinResponse(s *capnp.Segment) (ClusterJoinResponse, error) {
-	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1})
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2})
 	return ClusterJoinResponse(st), err
 }
 
@@ -946,25 +916,35 @@ func (s ClusterJoinResponse) Message() *capnp.Message {
 func (s ClusterJoinResponse) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s ClusterJoinResponse) ClusterId() int32 {
-	return int32(capnp.Struct(s).Uint32(0))
+func (s ClusterJoinResponse) ShardId() (string, error) {
+	p, err := capnp.Struct(s).Ptr(0)
+	return p.Text(), err
 }
 
-func (s ClusterJoinResponse) SetClusterId(v int32) {
-	capnp.Struct(s).SetUint32(0, uint32(v))
+func (s ClusterJoinResponse) HasShardId() bool {
+	return capnp.Struct(s).HasPtr(0)
+}
+
+func (s ClusterJoinResponse) ShardIdBytes() ([]byte, error) {
+	p, err := capnp.Struct(s).Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s ClusterJoinResponse) SetShardId(v string) error {
+	return capnp.Struct(s).SetText(0, v)
 }
 
 func (s ClusterJoinResponse) Pos() (Position, error) {
-	p, err := capnp.Struct(s).Ptr(0)
+	p, err := capnp.Struct(s).Ptr(1)
 	return Position(p.Struct()), err
 }
 
 func (s ClusterJoinResponse) HasPos() bool {
-	return capnp.Struct(s).HasPtr(0)
+	return capnp.Struct(s).HasPtr(1)
 }
 
 func (s ClusterJoinResponse) SetPos(v Position) error {
-	return capnp.Struct(s).SetPtr(0, capnp.Struct(v).ToPtr())
+	return capnp.Struct(s).SetPtr(1, capnp.Struct(v).ToPtr())
 }
 
 // NewPos sets the pos field to a newly
@@ -974,7 +954,7 @@ func (s ClusterJoinResponse) NewPos() (Position, error) {
 	if err != nil {
 		return Position{}, err
 	}
-	err = capnp.Struct(s).SetPtr(0, capnp.Struct(ss).ToPtr())
+	err = capnp.Struct(s).SetPtr(1, capnp.Struct(ss).ToPtr())
 	return ss, err
 }
 
@@ -983,7 +963,7 @@ type ClusterJoinResponse_List = capnp.StructList[ClusterJoinResponse]
 
 // NewClusterJoinResponse creates a new list of ClusterJoinResponse.
 func NewClusterJoinResponse_List(s *capnp.Segment, sz int32) (ClusterJoinResponse_List, error) {
-	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 1}, sz)
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 2}, sz)
 	return capnp.StructList[ClusterJoinResponse](l), err
 }
 
@@ -995,55 +975,55 @@ func (f ClusterJoinResponse_Future) Struct() (ClusterJoinResponse, error) {
 	return ClusterJoinResponse(p.Struct()), err
 }
 func (p ClusterJoinResponse_Future) Pos() Position_Future {
-	return Position_Future{Future: p.Future.Field(0, nil)}
+	return Position_Future{Future: p.Future.Field(1, nil)}
 }
 
-const schema_b81e0a7d72638bf1 = "x\xda\xb4\x94OLSY\x14\xc6\xcfw\xef\xed\x94\x90" +
-	"vh\xe7u5\x8bY\x90\x99\x84\x99\x81\x19\x18 \x99" +
-	"4\x93t`\x86LJB\xd2\x0bc4&*\xcf\xf6" +
-	"\xa5\xd4\x94\xbeG\xdf\x03\xdaD\x83\xa2.\xd4\x95\x0bW" +
-	"j\xe2B\xb7.$1\xc4\x15[\x17\x08\x1bc\x08\xba" +
-	"p\xa3\x11\xc3\x82\x05\x1a\x8d\xf0\xcc}\xfd+\x14\xd2\x8d" +
-	"\xab6'\xbfw\xbe\xef\xbb\xe7\x9e\xdb\xbd\x89\xbfEO" +
-	"pN\x10\x93}\xbeo\xdc\xfb\xcff\xfb'\x92K\xf3" +
-	"$#\x80\xbbu-\x99?\xd7\xfa\xc3\"\xfd\xebg`" +
-	"\xdaOlC\xeba~\"\xad\x8b\xcd\x12\xdc\x01\xd1\x99" +
-	":\xf5\xfe\xe8\x9d=\xb0\x0f\x0a\xb9\xc2>j7<\xf8" +
-	"\xba\x07\xdf\xbew~\xcb*\xac\xdfm\x04\xf7n3\x06" +
-	"\x0d\\\xd1;\x1e=\xce\x9e\x1c\x9b}\xb0\xfc\xb0!}" +
-	"\x823h\x19\x8f6\xb8\xa27V/>\xda\xbeyk" +
-	"\xb1!\xfd\x98\xb7B[\xf3\xe8\xa7\x1e\xbd\xfa}>\xf0" +
-	"va}\x89\xc2\x91}p\xbfh\x876$\x14< " +
-	"b\x047\x1e_L\xf3\xc1\xde\x95\x86\xad\xa7\xc5 \xb4" +
-	"\xcb\x1e}A\xa8\xd6\xbb+\x0b\xff\xf3\x93\x1b\xef\xf6\xd0" +
-	"C\xf0\x0b\xa2\xde\x97\x82A\xdb\xf4\xf07\xe25\xc1\xfd" +
-	"\xf5\x8f\xe8\xab\xab\xcf;>4r\xb2\xec\x8bB{\xe1" +
-	"S\xf0\x9a/F]n\xd2\x9c\x9c4s\xbf'\x99\xf7" +
-	"\xfb[R\xb7rV4a\xda\x996'c\xe6\x12\x80" +
-	"l\xe1\"\xe0\xba\x02D\xe1\x9f\xbf#\x92?r\xc8n" +
-	"\x86 v\xdd\x08T\xb5KU;8d\x1f\x03\x0a\x10" +
-	"\xc4 \x08(V\xfe\x1d\xa0\x91\xd5\x8b1#?b\xce" +
-	"\x18e\x15\xa2\x92\xc8p];\x94$zT\xad\x9bC" +
-	"\xfe\xc5\xe0ZY\xbdh\xe4\xe3)\"\xaaJX\xa6\x9d" +
-	"Q\x86U-T\xbbo\x04\x84\xea\x0c\xf0z\x03\xffL" +
-	"\xe8\xce\x88a\xdbz\xda\xa0&\x1c\xfcB$;9\xe4" +
-	"\x9f\x8d\x1d\xb49F\xc1A\x80\x18\x02\x07\x09&\xbc\xaf" +
-	"\xc6\x1c\xddiJ\xf0+D.9\x18H\x96>k\xc2" +
-	"C\xf4\xf0\xd01\xddkux\xec\xff\xf4I\xc3\x0b}" +
-	"\xc4J\xf9u\xc7\x9b\xb6\xa8\xca\x06\xcf\x10\xc9\x00\x87\xec" +
-	"\xa8J\x8c9\xd4\xa6;\x86\x8do\x09\x09\x0e\x84j{" +
-	"KP\xc5\xaa\x8e\xf8b\x9e\xd9i\xdb1\xf2\xc3f&" +
-	"7j\xd8\x96\x99\xb3\xf7\x1d\xf3h\x83\x88\xedu\x11\x93" +
-	"\xa5\x16qB\xaa\x12\xd1o\x99v\xb3\xc7\xab\x92\xd6\xdf" +
-	"\xa8Pms\xf4\xe3Dr\x9cCf\xeb7'\xa3\xc2" +
-	"OpH\x87!\xc8v\xdc\x08\x18Qxj\x9eHZ" +
-	"\x1c\xf2,C\x90\x7fr#\xe0D\xe1\xe2i\"Y\xe0" +
-	"\x90\x97\xaa\x075b\x12\x9f1\x10\xaa=\x99ewV" +
-	"y\xce\xe4-1B\xb5\xa7\xac\x0c\xa4\xcb3\x81\x1a\x8a" +
-	"\xba\x8f\x08\xd5\x1e\xb0J\xc4\xf2~\x90_O+\x91\xea" +
-	"S{\xe8R\xd5\x0d!fLM\x1b\xb6\xb3g\xde\x83" +
-	"D\xb2\x85CF\x18\xe6\xf4T*o\xd8v\xe5\xfe|" +
-	"\x0e\x00\x00\xff\xff\xf2\xbe\x9e'"
+const schema_b81e0a7d72638bf1 = "x\xda\xb4\x94OhSK\x14\xc6\xcf\x99\x99\xbc\x94\x92" +
+	"\xbc&\xeff\xf5\x16oQ\x9eP\xb5\xd5\xd6\xb4 A" +
+	"\x88\xad\x14I\xa1\x90\xb1\x8a\"\xa8\x1d\x93!\x89\xa4\xb9" +
+	"\xb7\xb9\xb7m\x02J\xb5\xeaB]\xb9p\xa5\x82\x0b\xdd" +
+	"\xba\xb0 \xc5U\xb7]h\xbb\x11)\xd5\xa5\x8a\xd5M" +
+	"\x17U\x14\xdb+3\xcd?\xd3\xb4d\xe3\xea^\x0e\xbf" +
+	"\x99\xef\xfb\xe6\xcc\x9c\xee/x\x94\xf5\xf8\xa7\x19\x10\xde" +
+	"\xeb\xf9\xcb}\xfaf\xaa/\x9d\x98\x9f\x01\x1eBt\xd7" +
+	"\xee$\xf2WZ\xff\x9b\x03\xe6\x050\xf6\x90U\xa3\x87" +
+	"\xa8\xbf.2\x05\xe8\xf6\xb3\xce\xe4\x85o\xa7\x1f\xd5\xb1" +
+	"\x1eT\xc8-\xf2\xc3\xb8\xa7\xe1\xbb\x1a~\xf8\xe4\xea\x9a" +
+	"UXy\xdc\x08\x0e\xaf\x13\x82\x06REohz\x94" +
+	"\xbc:3\xf5\xec\xe5\xf3\x86\xf49J\xd0\xc8hZR" +
+	"E\xaf.]\x7f\xb1~\xff\xc1\\Cz\x81\xb6\xa2\xb1" +
+	"\xac\xe9\xd7\x9a^\xfa7\xef\xfb<\xbb2\x0f\xc1\xd06" +
+	"\xb8\x8f\xb5\xa31\xa8\xd3\xf6\xb3(\xa0\x1b\x8b\xcd\xa5\xe8" +
+	"@x\xb1\x0eV\xc1\xc2\x13l\x00\x8d\x9b\x1a\xbe\xc6\xd4" +
+	"\xce\x9b\x8b\xb3'\xe9\xf9\xd5\xafu>\x06\xd1\xcb\x00\xc2" +
+	"\xef\x18A\xe3\x93\xc6\xdf\xb3\x8f\x80\xee\xfeC\x91\x0f\xb7" +
+	"\xdfv|odd\xc1\x13Ac\xd9\xa3]{\xa2\xd0" +
+	"\xe5&\xcc\xb113w0A\xf4\xf7@BX9+" +
+	"\x127\xedL\x9b\x931sqD\xdeB\x19\x00C\x80" +
+	"\xe0\xde\x7f\x00\xf8\xff\x14y7\xc1 b\x08U\xb1K" +
+	"\x15;(\xf2^\x82X@\x06\x04\x19 \x16\xcb\x7f;" +
+	"(dE1*\xf3\xc3\xe6\xa4\xac\xd3\x18\xaa\xd9\xae$" +
+	"\xd1\xa3j\xdd\x14\xf9\x11\x82\xae\x95\x15E\x99\x8f%\x01" +
+	"\xa0\"a\x99vF\xd9U\xb5@\xf5\xae\x01b\xa0\xc6" +
+	"\x00\xad5p,-\x9cai\xdb\"%\xa1\x09\x07\xfb" +
+	"\x00x'E~\xb8\xb1\x836G\x16\x1c\xf4\x01A\xdf" +
+	"N\x82q\xbdj\xc4\x11NS\x82\x7f \xf2\x96\x83\xfe" +
+	"\xc4\xd6\xb2&<Dv\x0f\x1d\x15z\xab\xddc\x1f\x17" +
+	"cR\x87>e%\xbd\xc2\xd1\xddf\x15Y\xff%\x00" +
+	"\xee\xa3\xc8;*\x12#\x0e\xb4\x09G\xda\xf87`\x9c" +
+	"\"\x06\xaa\x8f\x16P\x15+:\xec\xb7~f'lG" +
+	"\xe6\x87\xccL\xee\x84\xb4-3go;\xe6\x81F\xb7" +
+	"\xb7\xbd\x9a{\xdaN\x8b|2\x96,\x07\xf2Z\xa6\xdd" +
+	"\xec\xd9\xaa\x98\xb5\xd7)@\x99\xcfu\xb5\xae8\x0b\xc0" +
+	"G)\xf2,A?n\xba[\xc2\x19\x95<M\x91;" +
+	"\x04\xfdd\xc3\x0d!\x01\x08\x8e\xcf\x00p\x8b\"\xbfL" +
+	"\xd0O\x7f\xba!\xa4\x00\xc1\xe2E\x00^\xa0\xc8oT" +
+	"Ni\xd8\x04:)1P\x1d\x96%wV\xa9\xc9\xa0" +
+	"\xdf/\x06\xaaC\xac\x04\xa4J\x0dA\xd5\x11u\x191" +
+	"P\x1d]\xe5\x88\xa5\xc7\x01^\x91R\"\x95!\xbb\xeb" +
+	"\x8b\xaa\xe9@T\x8eOH\xdb\xa9k\xb6j@\x0bE" +
+	"\x1e\"8-\x92\xc9\xbc\xb4\xed\xf2Y\xff\x0a\x00\x00\xff" +
+	"\xff\xfa\x05\x98\x13"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{

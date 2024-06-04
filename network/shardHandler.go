@@ -3,6 +3,7 @@ package network
 import (
 	"base/common"
 	"base/message"
+	"base/network/messageHandler"
 	"fmt"
 	"math/rand/v2"
 	"sync"
@@ -11,75 +12,74 @@ import (
 )
 
 type ShardHandler struct {
-	*Server
+	server               *NetServer
+	MasterClient         *NetClient
 	clientConnectionChan chan *connection
 }
 
-type MasterConn struct {
-	*Client
-}
-
-func NewMasterConn() *MasterConn {
-	client, err := NewClient(ClientConfig{RemoteAddr: "127.0.0.1:1234"})
-	if err != nil {
-		fmt.Printf("Error creating client: %s\n", err)
-		return nil
-	}
-	return &MasterConn{
-		Client: client,
-	}
-}
-
-func (client *MasterConn) SendUnreliable(msg *capnp.Message) {
+func (c *NetClient) SendUnreliable(msg *capnp.Message) {
 	bytes, _ := message.MsgToBytes(msg)
-	client.quicConnection.SendDatagram(bytes)
+	c.quicConnection.SendDatagram(bytes)
 
 }
 
-func (client *MasterConn) ListenReliable() {
-	go client.Listen()
+func (h *NetClient) ListenReliable() {
+	// go h.Listen()
+	handler := messageHandler.NewMessageHandler()
+	handler.AddHandler(messageHandler.ShardJoinResponse)
+	for {
+		handler.HandleMessage(read(h.QuicStream), "master")
+	}
 	// decode(quic.Stream) -> capnp.Message
 	// HandleGameMessage(capnp.Message, channels)
 }
 
-func (client *MasterConn) SendReliable(msg *capnp.Message) {
-	client.QuicStream.mu.Lock()
-	defer client.QuicStream.mu.Unlock()
+func (c *NetClient) SendReliable(msg *capnp.Message) {
+	c.QuicStream.mu.Lock()
+	defer c.QuicStream.mu.Unlock()
 
-	err := client.QuicStream.SendMessage(msg)
+	err := c.QuicStream.SendMessage(msg)
 	if err != nil {
 		fmt.Println("couldn't write to stream")
 	}
-
-	fmt.Println("msg sent")
 }
 
-// Shard:
 func NewShardHandler() *ShardHandler {
-	server, err := NewServer(ServerConfig{LocalAddr: "127.0.0.1:0"})
+	// Listen Locally
+	server, err := NewNetServer(ServerConfig{LocalAddr: "127.0.0.1:0"})
 	if err != nil {
 		fmt.Printf("Error creating server: %s\n", err)
 		return nil
 	}
 	return &ShardHandler{
-		Server:               server,
-		clientConnectionChan: make(chan *connection),
+		server: server,
 	}
-
 }
 
-func (server *ShardHandler) GetAddress() string {
-	return server.quicListener.Addr().String()
+func (h *ShardHandler) JoinCluster() error {
+	client, err := NewNetClient(ClientConfig{RemoteAddr: "127.0.0.1:1234"})
+	if err != nil {
+		fmt.Printf("Error creating client: %s\n", err)
+		return err
+	}
+	h.MasterClient = client
+	return nil
 }
 
-func (server *ShardHandler) AcceptConnections() {
+func (h *ShardHandler) GetAddress() string {
+	return h.server.quicListener.Addr().String()
+}
+
+func (h *ShardHandler) AcceptConnections() {
+	h.clientConnectionChan = make(chan *connection)
+
 	for {
-		conn, err := server.AcceptConnection()
+		conn, err := h.server.AcceptConnection()
 		if err != nil {
 			fmt.Printf("Error accepting connection: %s\n", err)
 			return
 		}
-		server.clientConnectionChan <- conn
+		h.clientConnectionChan <- conn
 	}
 }
 func (server *ShardHandler) AcceptData() {
@@ -129,25 +129,14 @@ func Respond(stream quicStream) {
 	if err != nil {
 		return
 	}
+	fmt.Println("responding")
 	stream.SendMessage(chatMessage)
 
 }
 
-func Setup2() {
-	// generateTLSConfig
-	// ResolveLocalUDP -> localaddr net.UDPAddr
-	// * requirement from local udp conn
-	// ListenUDP -> conn net.UDPConn
-	// * requirement from transport
-	// Setup QUIC Transport -> quic.Transport
-	// * requirement from transport.Listen
-	// Listen -> quic.Listener
-	// * requirement from Accept
-	// Accept -> quic.Connection
-	// * requirement for connection.AcceptStream
-	// * requirement for connection.ReceiveDatagram
-	// * requirement for connection.SendDatagram
-	// AcceptStream -> quic.Stream
-	// * requirement for decode(quic.Stream)
-	// * requirement for stream.WriteStream
+func initShardMessageHandlers() *messageHandler.MessageHandler {
+	handler := messageHandler.NewMessageHandler()
+	handler.AddHandler(messageHandler.ShardJoinResponse)
+	handler.AddHandler(messageHandler.ClientGameMessage)
+	return handler
 }

@@ -13,10 +13,8 @@ struct GameMessage {
 }
 
 struct Position {
-    union {
-        x @0 :Int32;
-        y @1 :Int32;
-    }
+  x @0 :Int32;
+  y @1 :Int32;
 }
 
 struct PlayerMove {
@@ -54,6 +52,6 @@ struct ClusterJoinRequest {
 }
 
 struct ClusterJoinResponse {
-  clusterId @0 :Int32;
+  shardId @0 :Text;
   pos @1 :Position;
 }

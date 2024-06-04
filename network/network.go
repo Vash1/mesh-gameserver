@@ -28,7 +28,7 @@ type ServerConfig struct {
 	LocalAddr string
 }
 
-type Server struct {
+type NetServer struct {
 	localAddr     net.Addr
 	localConn     *net.UDPConn
 	quicTransport *quic.Transport
@@ -39,7 +39,7 @@ type ClientConfig struct {
 	RemoteAddr string
 }
 
-type Client struct {
+type NetClient struct {
 	remoteAddr     *net.UDPAddr
 	localConn      *net.UDPConn
 	quicTransport  *quic.Transport
@@ -56,7 +56,7 @@ type connection struct {
 	quic.Connection
 }
 
-func NewServer(config ServerConfig) (*Server, error) {
+func NewNetServer(config ServerConfig) (*NetServer, error) {
 	addr, err := net.ResolveUDPAddr("udp4", config.LocalAddr)
 	if err != nil {
 		return nil, err
@@ -76,8 +76,8 @@ func NewServer(config ServerConfig) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("QUIC server is listening on", ln.Addr())
-	return &Server{
+	fmt.Println("QUIC server listening on", ln.Addr())
+	return &NetServer{
 		localAddr:     udpConn.LocalAddr(),
 		localConn:     udpConn,
 		quicTransport: quicTransport,
@@ -85,7 +85,7 @@ func NewServer(config ServerConfig) (*Server, error) {
 	}, nil
 }
 
-func NewClient(config ClientConfig) (*Client, error) {
+func NewNetClient(config ClientConfig) (*NetClient, error) {
 	localConn, err := net.ListenUDP("udp4", &net.UDPAddr{})
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{
+	return &NetClient{
 		remoteAddr:     remoteAddr,
 		localConn:      localConn,
 		quicTransport:  quicTransport,
@@ -120,7 +120,7 @@ func NewClient(config ClientConfig) (*Client, error) {
 
 }
 
-func (client *Client) OpenStream() error {
+func (client *NetClient) OpenStream() error {
 	stream, err := client.quicConnection.OpenStream()
 	if err != nil {
 		return err
@@ -131,11 +131,11 @@ func (client *Client) OpenStream() error {
 	return nil
 }
 
-func (client *Client) Listen() *capnp.Message {
+func (client *NetClient) Listen() *capnp.Message {
 	for {
 		msg := read(client.QuicStream)
 		fmt.Println("Received message:", msg)
-		return msg
+		// return msg
 	}
 }
 
@@ -143,10 +143,6 @@ func (stream *quicStream) SendMessage(msg *capnp.Message) error {
 	if err := capnp.NewEncoder(stream).Encode(msg); err != nil {
 		return err
 	}
-	// abc, _ := msg.Marshal()
-	// buf := make([]byte, len(abc))
-	// _, err := io.ReadFull(stream, buf)
-	// fmt.Println(err)
 	return nil
 }
 
@@ -155,16 +151,15 @@ func (conn *connection) SendDatagram(bytes []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to send datagram: %w", err)
 	}
-	fmt.Println("new Datagram sent successfully.")
 	return nil
 }
 
-func (server *Server) AcceptConnection() (*connection, error) {
+func (server *NetServer) AcceptConnection() (*connection, error) {
 	conn, err := server.quicListener.Accept(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Connection accepted from", conn.RemoteAddr())
+	fmt.Println("\nConnection accepted from", conn.RemoteAddr())
 	return &connection{conn}, nil
 }
 
@@ -173,20 +168,17 @@ func (serverConn *connection) AcceptStream() (quic.Stream, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Stream accepted from", stream.StreamID())
 	return stream, nil
 }
 
 func (serverConn *connection) receiveDatagram() ([]byte, error) {
 	// defer conn.CloseWithError(0, "bye")
-	for {
-		datagram, err := serverConn.ReceiveDatagram(context.Background())
-		if err != nil {
-			log.Println("Failed to receive datagram:", err)
-			return nil, err
-		}
-		return datagram, nil
+	datagram, err := serverConn.ReceiveDatagram(context.Background())
+	if err != nil {
+		log.Println("Failed to receive datagram:", err)
+		return nil, err
 	}
+	return datagram, nil
 }
 
 func generateTLSConfig() *tls.Config {

@@ -8,17 +8,17 @@ import (
 )
 
 type ClientHandler struct {
-	*Client
+	*NetClient
 }
 
 func NewClientHandler(addr string) *ClientHandler {
-	client, err := NewClient(ClientConfig{RemoteAddr: addr})
+	client, err := NewNetClient(ClientConfig{RemoteAddr: addr})
 	if err != nil {
 		fmt.Printf("Error creating client: %s\n", err)
 		return nil
 	}
 	return &ClientHandler{
-		Client: client,
+		NetClient: client,
 	}
 
 }
