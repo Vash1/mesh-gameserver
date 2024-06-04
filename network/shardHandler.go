@@ -33,7 +33,12 @@ func (h *NetClient) ListenReliable(PoolJoined chan struct{}) {
 		fmt.Println("Joined pool")
 	}()
 	for {
-		handler.HandleMessage(read(h.QuicStream), "master")
+		msg, ok := read(h.QuicStream)
+		if !ok {
+			fmt.Println("Stream closed")
+			return
+		}
+		handler.HandleMessage(msg, "master")
 	}
 }
 
@@ -98,7 +103,12 @@ func (server *ShardHandler) AcceptData() {
 
 			quicStream := quicStream{stream, &sync.Mutex{}}
 			for {
-				message.HandleGameMessage(read(quicStream))
+				msg, ok := read(quicStream)
+				if !ok {
+					fmt.Println("Stream closed")
+					return
+				}
+				message.HandleGameMessage(msg)
 				Respond(quicStream)
 				// go server.handleStream(quicStream)
 			}

@@ -133,7 +133,11 @@ func (client *NetClient) OpenStream() error {
 
 func (client *NetClient) Listen() *capnp.Message {
 	for {
-		msg := read(client.QuicStream)
+		msg, ok := read(client.QuicStream)
+		if !ok {
+			fmt.Println("Stream closed")
+			return nil
+		}
 		fmt.Println("Received message:", msg)
 		// return msg
 	}
@@ -172,7 +176,6 @@ func (serverConn *connection) AcceptStream() (quic.Stream, error) {
 }
 
 func (serverConn *connection) receiveDatagram() ([]byte, error) {
-	// defer conn.CloseWithError(0, "bye")
 	datagram, err := serverConn.ReceiveDatagram(context.Background())
 	if err != nil {
 		log.Println("Failed to receive datagram:", err)
@@ -217,16 +220,17 @@ func generateTLSConfig() *tls.Config {
 	}
 }
 
-func read(stream quic.Stream) *capnp.Message {
+func read(stream quic.Stream) (*capnp.Message, bool) {
 	decoder := capnp.NewDecoder(stream)
 	msg, err := decoder.Decode()
 	if err != nil {
 		if err == io.EOF {
 			fmt.Println("Stream closed by client.")
-			return nil
+			return nil, false
 		}
 		log.Println("Failed to decode message:", err)
+		return nil, false
 	}
 
-	return msg
+	return msg, true
 }

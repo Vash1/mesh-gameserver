@@ -98,7 +98,12 @@ func (server *MasterHandler) AcceptStreams() {
 			server.connectedShards[shardConn.id] = &shardConn
 
 			for {
-				msgHandler.HandleMessage(read(stream), shardConn.id)
+				msg, ok := read(stream)
+				if !ok {
+					fmt.Println("Stream closed")
+					return
+				}
+				msgHandler.HandleMessage(msg, shardConn.id)
 				// Respond(quicStream)
 				// go server.handleStream(quicStream)
 			}
