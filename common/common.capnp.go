@@ -241,84 +241,84 @@ func (p GameMessage_Future) ChatMessage() ChatMessage_Future {
 	return ChatMessage_Future{Future: p.Future.Field(0, nil)}
 }
 
-type Position capnp.Struct
+type Vector capnp.Struct
 
-// Position_TypeID is the unique identifier for the type Position.
-const Position_TypeID = 0x82c063683577d7ae
+// Vector_TypeID is the unique identifier for the type Vector.
+const Vector_TypeID = 0xe587c61266c80312
 
-func NewPosition(s *capnp.Segment) (Position, error) {
+func NewVector(s *capnp.Segment) (Vector, error) {
 	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
-	return Position(st), err
+	return Vector(st), err
 }
 
-func NewRootPosition(s *capnp.Segment) (Position, error) {
+func NewRootVector(s *capnp.Segment) (Vector, error) {
 	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0})
-	return Position(st), err
+	return Vector(st), err
 }
 
-func ReadRootPosition(msg *capnp.Message) (Position, error) {
+func ReadRootVector(msg *capnp.Message) (Vector, error) {
 	root, err := msg.Root()
-	return Position(root.Struct()), err
+	return Vector(root.Struct()), err
 }
 
-func (s Position) String() string {
-	str, _ := text.Marshal(0x82c063683577d7ae, capnp.Struct(s))
+func (s Vector) String() string {
+	str, _ := text.Marshal(0xe587c61266c80312, capnp.Struct(s))
 	return str
 }
 
-func (s Position) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
+func (s Vector) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
 	return capnp.Struct(s).EncodeAsPtr(seg)
 }
 
-func (Position) DecodeFromPtr(p capnp.Ptr) Position {
-	return Position(capnp.Struct{}.DecodeFromPtr(p))
+func (Vector) DecodeFromPtr(p capnp.Ptr) Vector {
+	return Vector(capnp.Struct{}.DecodeFromPtr(p))
 }
 
-func (s Position) ToPtr() capnp.Ptr {
+func (s Vector) ToPtr() capnp.Ptr {
 	return capnp.Struct(s).ToPtr()
 }
-func (s Position) IsValid() bool {
+func (s Vector) IsValid() bool {
 	return capnp.Struct(s).IsValid()
 }
 
-func (s Position) Message() *capnp.Message {
+func (s Vector) Message() *capnp.Message {
 	return capnp.Struct(s).Message()
 }
 
-func (s Position) Segment() *capnp.Segment {
+func (s Vector) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s Position) X() int32 {
+func (s Vector) X() int32 {
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
-func (s Position) SetX(v int32) {
+func (s Vector) SetX(v int32) {
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
-func (s Position) Y() int32 {
+func (s Vector) Y() int32 {
 	return int32(capnp.Struct(s).Uint32(4))
 }
 
-func (s Position) SetY(v int32) {
+func (s Vector) SetY(v int32) {
 	capnp.Struct(s).SetUint32(4, uint32(v))
 }
 
-// Position_List is a list of Position.
-type Position_List = capnp.StructList[Position]
+// Vector_List is a list of Vector.
+type Vector_List = capnp.StructList[Vector]
 
-// NewPosition creates a new list of Position.
-func NewPosition_List(s *capnp.Segment, sz int32) (Position_List, error) {
+// NewVector creates a new list of Vector.
+func NewVector_List(s *capnp.Segment, sz int32) (Vector_List, error) {
 	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 8, PointerCount: 0}, sz)
-	return capnp.StructList[Position](l), err
+	return capnp.StructList[Vector](l), err
 }
 
-// Position_Future is a wrapper for a Position promised by a client call.
-type Position_Future struct{ *capnp.Future }
+// Vector_Future is a wrapper for a Vector promised by a client call.
+type Vector_Future struct{ *capnp.Future }
 
-func (f Position_Future) Struct() (Position, error) {
+func (f Vector_Future) Struct() (Vector, error) {
 	p, err := f.Future.Ptr()
-	return Position(p.Struct()), err
+	return Vector(p.Struct()), err
 }
 
 type PlayerMove capnp.Struct
@@ -368,33 +368,33 @@ func (s PlayerMove) Message() *capnp.Message {
 func (s PlayerMove) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s PlayerMove) PlayerId() int32 {
+func (s PlayerMove) PlayerID() int32 {
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
-func (s PlayerMove) SetPlayerId(v int32) {
+func (s PlayerMove) SetPlayerID(v int32) {
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
-func (s PlayerMove) Position() (Position, error) {
+func (s PlayerMove) Position() (Vector, error) {
 	p, err := capnp.Struct(s).Ptr(0)
-	return Position(p.Struct()), err
+	return Vector(p.Struct()), err
 }
 
 func (s PlayerMove) HasPosition() bool {
 	return capnp.Struct(s).HasPtr(0)
 }
 
-func (s PlayerMove) SetPosition(v Position) error {
+func (s PlayerMove) SetPosition(v Vector) error {
 	return capnp.Struct(s).SetPtr(0, capnp.Struct(v).ToPtr())
 }
 
 // NewPosition sets the position field to a newly
-// allocated Position struct, preferring placement in s's segment.
-func (s PlayerMove) NewPosition() (Position, error) {
-	ss, err := NewPosition(capnp.Struct(s).Segment())
+// allocated Vector struct, preferring placement in s's segment.
+func (s PlayerMove) NewPosition() (Vector, error) {
+	ss, err := NewVector(capnp.Struct(s).Segment())
 	if err != nil {
-		return Position{}, err
+		return Vector{}, err
 	}
 	err = capnp.Struct(s).SetPtr(0, capnp.Struct(ss).ToPtr())
 	return ss, err
@@ -416,8 +416,8 @@ func (f PlayerMove_Future) Struct() (PlayerMove, error) {
 	p, err := f.Future.Ptr()
 	return PlayerMove(p.Struct()), err
 }
-func (p PlayerMove_Future) Position() Position_Future {
-	return Position_Future{Future: p.Future.Field(0, nil)}
+func (p PlayerMove_Future) Position() Vector_Future {
+	return Vector_Future{Future: p.Future.Field(0, nil)}
 }
 
 type PlayerAction capnp.Struct
@@ -467,11 +467,11 @@ func (s PlayerAction) Message() *capnp.Message {
 func (s PlayerAction) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s PlayerAction) PlayerId() int32 {
+func (s PlayerAction) PlayerID() int32 {
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
-func (s PlayerAction) SetPlayerId(v int32) {
+func (s PlayerAction) SetPlayerID(v int32) {
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
@@ -645,33 +645,33 @@ func (s PlayerState) Message() *capnp.Message {
 func (s PlayerState) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s PlayerState) PlayerId() int32 {
+func (s PlayerState) PlayerID() int32 {
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
-func (s PlayerState) SetPlayerId(v int32) {
+func (s PlayerState) SetPlayerID(v int32) {
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
-func (s PlayerState) Position() (Position, error) {
+func (s PlayerState) Position() (Vector, error) {
 	p, err := capnp.Struct(s).Ptr(0)
-	return Position(p.Struct()), err
+	return Vector(p.Struct()), err
 }
 
 func (s PlayerState) HasPosition() bool {
 	return capnp.Struct(s).HasPtr(0)
 }
 
-func (s PlayerState) SetPosition(v Position) error {
+func (s PlayerState) SetPosition(v Vector) error {
 	return capnp.Struct(s).SetPtr(0, capnp.Struct(v).ToPtr())
 }
 
 // NewPosition sets the position field to a newly
-// allocated Position struct, preferring placement in s's segment.
-func (s PlayerState) NewPosition() (Position, error) {
-	ss, err := NewPosition(capnp.Struct(s).Segment())
+// allocated Vector struct, preferring placement in s's segment.
+func (s PlayerState) NewPosition() (Vector, error) {
+	ss, err := NewVector(capnp.Struct(s).Segment())
 	if err != nil {
-		return Position{}, err
+		return Vector{}, err
 	}
 	err = capnp.Struct(s).SetPtr(0, capnp.Struct(ss).ToPtr())
 	return ss, err
@@ -693,8 +693,8 @@ func (f PlayerState_Future) Struct() (PlayerState, error) {
 	p, err := f.Future.Ptr()
 	return PlayerState(p.Struct()), err
 }
-func (p PlayerState_Future) Position() Position_Future {
-	return Position_Future{Future: p.Future.Field(0, nil)}
+func (p PlayerState_Future) Position() Vector_Future {
+	return Vector_Future{Future: p.Future.Field(0, nil)}
 }
 
 type ChatMessage capnp.Struct
@@ -744,11 +744,11 @@ func (s ChatMessage) Message() *capnp.Message {
 func (s ChatMessage) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s ChatMessage) PlayerId() int32 {
+func (s ChatMessage) PlayerID() int32 {
 	return int32(capnp.Struct(s).Uint32(0))
 }
 
-func (s ChatMessage) SetPlayerId(v int32) {
+func (s ChatMessage) SetPlayerID(v int32) {
 	capnp.Struct(s).SetUint32(0, uint32(v))
 }
 
@@ -916,43 +916,43 @@ func (s ClusterJoinResponse) Message() *capnp.Message {
 func (s ClusterJoinResponse) Segment() *capnp.Segment {
 	return capnp.Struct(s).Segment()
 }
-func (s ClusterJoinResponse) ShardId() (string, error) {
+func (s ClusterJoinResponse) ShardID() (string, error) {
 	p, err := capnp.Struct(s).Ptr(0)
 	return p.Text(), err
 }
 
-func (s ClusterJoinResponse) HasShardId() bool {
+func (s ClusterJoinResponse) HasShardID() bool {
 	return capnp.Struct(s).HasPtr(0)
 }
 
-func (s ClusterJoinResponse) ShardIdBytes() ([]byte, error) {
+func (s ClusterJoinResponse) ShardIDBytes() ([]byte, error) {
 	p, err := capnp.Struct(s).Ptr(0)
 	return p.TextBytes(), err
 }
 
-func (s ClusterJoinResponse) SetShardId(v string) error {
+func (s ClusterJoinResponse) SetShardID(v string) error {
 	return capnp.Struct(s).SetText(0, v)
 }
 
-func (s ClusterJoinResponse) Pos() (Position, error) {
+func (s ClusterJoinResponse) Pos() (Vector, error) {
 	p, err := capnp.Struct(s).Ptr(1)
-	return Position(p.Struct()), err
+	return Vector(p.Struct()), err
 }
 
 func (s ClusterJoinResponse) HasPos() bool {
 	return capnp.Struct(s).HasPtr(1)
 }
 
-func (s ClusterJoinResponse) SetPos(v Position) error {
+func (s ClusterJoinResponse) SetPos(v Vector) error {
 	return capnp.Struct(s).SetPtr(1, capnp.Struct(v).ToPtr())
 }
 
 // NewPos sets the pos field to a newly
-// allocated Position struct, preferring placement in s's segment.
-func (s ClusterJoinResponse) NewPos() (Position, error) {
-	ss, err := NewPosition(capnp.Struct(s).Segment())
+// allocated Vector struct, preferring placement in s's segment.
+func (s ClusterJoinResponse) NewPos() (Vector, error) {
+	ss, err := NewVector(capnp.Struct(s).Segment())
 	if err != nil {
-		return Position{}, err
+		return Vector{}, err
 	}
 	err = capnp.Struct(s).SetPtr(1, capnp.Struct(ss).ToPtr())
 	return ss, err
@@ -974,68 +974,375 @@ func (f ClusterJoinResponse_Future) Struct() (ClusterJoinResponse, error) {
 	p, err := f.Future.Ptr()
 	return ClusterJoinResponse(p.Struct()), err
 }
-func (p ClusterJoinResponse_Future) Pos() Position_Future {
-	return Position_Future{Future: p.Future.Field(1, nil)}
+func (p ClusterJoinResponse_Future) Pos() Vector_Future {
+	return Vector_Future{Future: p.Future.Field(1, nil)}
 }
 
-const schema_b81e0a7d72638bf1 = "x\xda\xb4\x94OhSK\x14\xc6\xcf\x99\x99\xbc\x94\x92" +
-	"\xbc&\xeff\xf5\x16oQ\x9eP\xb5\xd5\xd6\xb4 A" +
-	"\x88\xad\x14I\xa1\x90\xb1\x8a\"\xa8\x1d\x93!\x89\xa4\xb9" +
-	"\xb7\xb9\xb7m\x02J\xb5\xeaB]\xb9p\xa5\x82\x0b\xdd" +
-	"\xba\xb0 \xc5U\xb7]h\xbb\x11)\xd5\xa5\x8a\xd5M" +
-	"\x17U\x14\xdb+3\xcd?\xd3\xb4d\xe3\xea^\x0e\xbf" +
-	"\x99\xef\xfb\xe6\xcc\x9c\xee/x\x94\xf5\xf8\xa7\x19\x10\xde" +
-	"\xeb\xf9\xcb}\xfaf\xaa/\x9d\x98\x9f\x01\x1eBt\xd7" +
-	"\xee$\xf2WZ\xff\x9b\x03\xe6\x050\xf6\x90U\xa3\x87" +
-	"\xa8\xbf.2\x05\xe8\xf6\xb3\xce\xe4\x85o\xa7\x1f\xd5\xb1" +
-	"\x1eT\xc8-\xf2\xc3\xb8\xa7\xe1\xbb\x1a~\xf8\xe4\xea\x9a" +
-	"UXy\xdc\x08\x0e\xaf\x13\x82\x06REohz\x94" +
-	"\xbc:3\xf5\xec\xe5\xf3\x86\xf49J\xd0\xc8hZR" +
-	"E\xaf.]\x7f\xb1~\xff\xc1\\Cz\x81\xb6\xa2\xb1" +
-	"\xac\xe9\xd7\x9a^\xfa7\xef\xfb<\xbb2\x0f\xc1\xd06" +
-	"\xb8\x8f\xb5\xa31\xa8\xd3\xf6\xb3(\xa0\x1b\x8b\xcd\xa5\xe8" +
-	"@x\xb1\x0eV\xc1\xc2\x13l\x00\x8d\x9b\x1a\xbe\xc6\xd4" +
-	"\xce\x9b\x8b\xb3'\xe9\xf9\xd5\xafu>\x06\xd1\xcb\x00\xc2" +
-	"\xef\x18A\xe3\x93\xc6\xdf\xb3\x8f\x80\xee\xfeC\x91\x0f\xb7" +
-	"\xdfv|odd\xc1\x13Ac\xd9\xa3]{\xa2\xd0" +
-	"\xe5&\xcc\xb113w0A\xf4\xf7@BX9+" +
-	"\x127\xedL\x9b\x931sqD\xdeB\x19\x00C\x80" +
-	"\xe0\xde\x7f\x00\xf8\xff\x14y7\xc1 b\x08U\xb1K" +
-	"\x15;(\xf2^\x82X@\x06\x04\x19 \x16\xcb\x7f;" +
-	"(dE1*\xf3\xc3\xe6\xa4\xac\xd3\x18\xaa\xd9\xae$" +
-	"\xd1\xa3j\xdd\x14\xf9\x11\x82\xae\x95\x15E\x99\x8f%\x01" +
-	"\xa0\"a\x99vF\xd9U\xb5@\xf5\xae\x01b\xa0\xc6" +
-	"\x00\xad5p,-\x9cai\xdb\"%\xa1\x09\x07\xfb" +
-	"\x00x'E~\xb8\xb1\x836G\x16\x1c\xf4\x01A\xdf" +
-	"N\x82q\xbdj\xc4\x11NS\x82\x7f \xf2\x96\x83\xfe" +
-	"\xc4\xd6\xb2&<Dv\x0f\x1d\x15z\xab\xddc\x1f\x17" +
-	"cR\x87>e%\xbd\xc2\xd1\xddf\x15Y\xff%\x00" +
-	"\xee\xa3\xc8;*\x12#\x0e\xb4\x09G\xda\xf87`\x9c" +
-	"\"\x06\xaa\x8f\x16P\x15+:\xec\xb7~f'lG" +
-	"\xe6\x87\xccL\xee\x84\xb4-3go;\xe6\x81F\xb7" +
-	"\xb7\xbd\x9a{\xdaN\x8b|2\x96,\x07\xf2Z\xa6\xdd" +
-	"\xec\xd9\xaa\x98\xb5\xd7)@\x99\xcfu\xb5\xae8\x0b\xc0" +
-	"G)\xf2,A?n\xba[\xc2\x19\x95<M\x91;" +
-	"\x04\xfdd\xc3\x0d!\x01\x08\x8e\xcf\x00p\x8b\"\xbfL" +
-	"\xd0O\x7f\xba!\xa4\x00\xc1\xe2E\x00^\xa0\xc8oT" +
-	"Ni\xd8\x04:)1P\x1d\x96%wV\xa9\xc9\xa0" +
-	"\xdf/\x06\xaaC\xac\x04\xa4J\x0dA\xd5\x11u\x191" +
-	"P\x1d]\xe5\x88\xa5\xc7\x01^\x91R\"\x95!\xbb\xeb" +
-	"\x8b\xaa\xe9@T\x8eOH\xdb\xa9k\xb6j@\x0bE" +
-	"\x1e\"8-\x92\xc9\xbc\xb4\xed\xf2Y\xff\x0a\x00\x00\xff" +
-	"\xff\xfa\x05\x98\x13"
+type MapData capnp.Struct
+
+// MapData_TypeID is the unique identifier for the type MapData.
+const MapData_TypeID = 0xc818a5ce7d315b5f
+
+func NewMapData(s *capnp.Segment) (MapData, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return MapData(st), err
+}
+
+func NewRootMapData(s *capnp.Segment) (MapData, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1})
+	return MapData(st), err
+}
+
+func ReadRootMapData(msg *capnp.Message) (MapData, error) {
+	root, err := msg.Root()
+	return MapData(root.Struct()), err
+}
+
+func (s MapData) String() string {
+	str, _ := text.Marshal(0xc818a5ce7d315b5f, capnp.Struct(s))
+	return str
+}
+
+func (s MapData) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
+	return capnp.Struct(s).EncodeAsPtr(seg)
+}
+
+func (MapData) DecodeFromPtr(p capnp.Ptr) MapData {
+	return MapData(capnp.Struct{}.DecodeFromPtr(p))
+}
+
+func (s MapData) ToPtr() capnp.Ptr {
+	return capnp.Struct(s).ToPtr()
+}
+func (s MapData) IsValid() bool {
+	return capnp.Struct(s).IsValid()
+}
+
+func (s MapData) Message() *capnp.Message {
+	return capnp.Struct(s).Message()
+}
+
+func (s MapData) Segment() *capnp.Segment {
+	return capnp.Struct(s).Segment()
+}
+func (s MapData) Size() (Vector, error) {
+	p, err := capnp.Struct(s).Ptr(0)
+	return Vector(p.Struct()), err
+}
+
+func (s MapData) HasSize() bool {
+	return capnp.Struct(s).HasPtr(0)
+}
+
+func (s MapData) SetSize(v Vector) error {
+	return capnp.Struct(s).SetPtr(0, capnp.Struct(v).ToPtr())
+}
+
+// NewSize sets the size field to a newly
+// allocated Vector struct, preferring placement in s's segment.
+func (s MapData) NewSize() (Vector, error) {
+	ss, err := NewVector(capnp.Struct(s).Segment())
+	if err != nil {
+		return Vector{}, err
+	}
+	err = capnp.Struct(s).SetPtr(0, capnp.Struct(ss).ToPtr())
+	return ss, err
+}
+
+// MapData_List is a list of MapData.
+type MapData_List = capnp.StructList[MapData]
+
+// NewMapData creates a new list of MapData.
+func NewMapData_List(s *capnp.Segment, sz int32) (MapData_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 1}, sz)
+	return capnp.StructList[MapData](l), err
+}
+
+// MapData_Future is a wrapper for a MapData promised by a client call.
+type MapData_Future struct{ *capnp.Future }
+
+func (f MapData_Future) Struct() (MapData, error) {
+	p, err := f.Future.Ptr()
+	return MapData(p.Struct()), err
+}
+func (p MapData_Future) Size() Vector_Future {
+	return Vector_Future{Future: p.Future.Field(0, nil)}
+}
+
+type ClientConnectionRequest capnp.Struct
+
+// ClientConnectionRequest_TypeID is the unique identifier for the type ClientConnectionRequest.
+const ClientConnectionRequest_TypeID = 0x874806c29c1c0838
+
+func NewClientConnectionRequest(s *capnp.Segment) (ClientConnectionRequest, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return ClientConnectionRequest(st), err
+}
+
+func NewRootClientConnectionRequest(s *capnp.Segment) (ClientConnectionRequest, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0})
+	return ClientConnectionRequest(st), err
+}
+
+func ReadRootClientConnectionRequest(msg *capnp.Message) (ClientConnectionRequest, error) {
+	root, err := msg.Root()
+	return ClientConnectionRequest(root.Struct()), err
+}
+
+func (s ClientConnectionRequest) String() string {
+	str, _ := text.Marshal(0x874806c29c1c0838, capnp.Struct(s))
+	return str
+}
+
+func (s ClientConnectionRequest) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
+	return capnp.Struct(s).EncodeAsPtr(seg)
+}
+
+func (ClientConnectionRequest) DecodeFromPtr(p capnp.Ptr) ClientConnectionRequest {
+	return ClientConnectionRequest(capnp.Struct{}.DecodeFromPtr(p))
+}
+
+func (s ClientConnectionRequest) ToPtr() capnp.Ptr {
+	return capnp.Struct(s).ToPtr()
+}
+func (s ClientConnectionRequest) IsValid() bool {
+	return capnp.Struct(s).IsValid()
+}
+
+func (s ClientConnectionRequest) Message() *capnp.Message {
+	return capnp.Struct(s).Message()
+}
+
+func (s ClientConnectionRequest) Segment() *capnp.Segment {
+	return capnp.Struct(s).Segment()
+}
+
+// ClientConnectionRequest_List is a list of ClientConnectionRequest.
+type ClientConnectionRequest_List = capnp.StructList[ClientConnectionRequest]
+
+// NewClientConnectionRequest creates a new list of ClientConnectionRequest.
+func NewClientConnectionRequest_List(s *capnp.Segment, sz int32) (ClientConnectionRequest_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 0}, sz)
+	return capnp.StructList[ClientConnectionRequest](l), err
+}
+
+// ClientConnectionRequest_Future is a wrapper for a ClientConnectionRequest promised by a client call.
+type ClientConnectionRequest_Future struct{ *capnp.Future }
+
+func (f ClientConnectionRequest_Future) Struct() (ClientConnectionRequest, error) {
+	p, err := f.Future.Ptr()
+	return ClientConnectionRequest(p.Struct()), err
+}
+
+type ClientConnectionResponse capnp.Struct
+
+// ClientConnectionResponse_TypeID is the unique identifier for the type ClientConnectionResponse.
+const ClientConnectionResponse_TypeID = 0x96ab4e0b79afcb59
+
+func NewClientConnectionResponse(s *capnp.Segment) (ClientConnectionResponse, error) {
+	st, err := capnp.NewStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3})
+	return ClientConnectionResponse(st), err
+}
+
+func NewRootClientConnectionResponse(s *capnp.Segment) (ClientConnectionResponse, error) {
+	st, err := capnp.NewRootStruct(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3})
+	return ClientConnectionResponse(st), err
+}
+
+func ReadRootClientConnectionResponse(msg *capnp.Message) (ClientConnectionResponse, error) {
+	root, err := msg.Root()
+	return ClientConnectionResponse(root.Struct()), err
+}
+
+func (s ClientConnectionResponse) String() string {
+	str, _ := text.Marshal(0x96ab4e0b79afcb59, capnp.Struct(s))
+	return str
+}
+
+func (s ClientConnectionResponse) EncodeAsPtr(seg *capnp.Segment) capnp.Ptr {
+	return capnp.Struct(s).EncodeAsPtr(seg)
+}
+
+func (ClientConnectionResponse) DecodeFromPtr(p capnp.Ptr) ClientConnectionResponse {
+	return ClientConnectionResponse(capnp.Struct{}.DecodeFromPtr(p))
+}
+
+func (s ClientConnectionResponse) ToPtr() capnp.Ptr {
+	return capnp.Struct(s).ToPtr()
+}
+func (s ClientConnectionResponse) IsValid() bool {
+	return capnp.Struct(s).IsValid()
+}
+
+func (s ClientConnectionResponse) Message() *capnp.Message {
+	return capnp.Struct(s).Message()
+}
+
+func (s ClientConnectionResponse) Segment() *capnp.Segment {
+	return capnp.Struct(s).Segment()
+}
+func (s ClientConnectionResponse) ClientID() (string, error) {
+	p, err := capnp.Struct(s).Ptr(0)
+	return p.Text(), err
+}
+
+func (s ClientConnectionResponse) HasClientID() bool {
+	return capnp.Struct(s).HasPtr(0)
+}
+
+func (s ClientConnectionResponse) ClientIDBytes() ([]byte, error) {
+	p, err := capnp.Struct(s).Ptr(0)
+	return p.TextBytes(), err
+}
+
+func (s ClientConnectionResponse) SetClientID(v string) error {
+	return capnp.Struct(s).SetText(0, v)
+}
+
+func (s ClientConnectionResponse) Position() (Vector, error) {
+	p, err := capnp.Struct(s).Ptr(1)
+	return Vector(p.Struct()), err
+}
+
+func (s ClientConnectionResponse) HasPosition() bool {
+	return capnp.Struct(s).HasPtr(1)
+}
+
+func (s ClientConnectionResponse) SetPosition(v Vector) error {
+	return capnp.Struct(s).SetPtr(1, capnp.Struct(v).ToPtr())
+}
+
+// NewPosition sets the position field to a newly
+// allocated Vector struct, preferring placement in s's segment.
+func (s ClientConnectionResponse) NewPosition() (Vector, error) {
+	ss, err := NewVector(capnp.Struct(s).Segment())
+	if err != nil {
+		return Vector{}, err
+	}
+	err = capnp.Struct(s).SetPtr(1, capnp.Struct(ss).ToPtr())
+	return ss, err
+}
+
+func (s ClientConnectionResponse) MapData() (MapData, error) {
+	p, err := capnp.Struct(s).Ptr(2)
+	return MapData(p.Struct()), err
+}
+
+func (s ClientConnectionResponse) HasMapData() bool {
+	return capnp.Struct(s).HasPtr(2)
+}
+
+func (s ClientConnectionResponse) SetMapData(v MapData) error {
+	return capnp.Struct(s).SetPtr(2, capnp.Struct(v).ToPtr())
+}
+
+// NewMapData sets the mapData field to a newly
+// allocated MapData struct, preferring placement in s's segment.
+func (s ClientConnectionResponse) NewMapData() (MapData, error) {
+	ss, err := NewMapData(capnp.Struct(s).Segment())
+	if err != nil {
+		return MapData{}, err
+	}
+	err = capnp.Struct(s).SetPtr(2, capnp.Struct(ss).ToPtr())
+	return ss, err
+}
+
+// ClientConnectionResponse_List is a list of ClientConnectionResponse.
+type ClientConnectionResponse_List = capnp.StructList[ClientConnectionResponse]
+
+// NewClientConnectionResponse creates a new list of ClientConnectionResponse.
+func NewClientConnectionResponse_List(s *capnp.Segment, sz int32) (ClientConnectionResponse_List, error) {
+	l, err := capnp.NewCompositeList(s, capnp.ObjectSize{DataSize: 0, PointerCount: 3}, sz)
+	return capnp.StructList[ClientConnectionResponse](l), err
+}
+
+// ClientConnectionResponse_Future is a wrapper for a ClientConnectionResponse promised by a client call.
+type ClientConnectionResponse_Future struct{ *capnp.Future }
+
+func (f ClientConnectionResponse_Future) Struct() (ClientConnectionResponse, error) {
+	p, err := f.Future.Ptr()
+	return ClientConnectionResponse(p.Struct()), err
+}
+func (p ClientConnectionResponse_Future) Position() Vector_Future {
+	return Vector_Future{Future: p.Future.Field(1, nil)}
+}
+func (p ClientConnectionResponse_Future) MapData() MapData_Future {
+	return MapData_Future{Future: p.Future.Field(2, nil)}
+}
+
+const schema_b81e0a7d72638bf1 = "x\xda\xb4\x95_h[U\x1c\xc7\x7f\xdfs\xee\xcd-" +
+	"31Io\x04\x11\x15\x1c\x0eZ\xdd\xb45\x0eFQ" +
+	"\xb2v\x19\x9aa$\xc7Y\x9d\x7f\xd7\xb3\xe4\xdaf4" +
+	"\xb9\xb7\xb9\xb7[#\x8e\x8a\x0aE}V\x18N\xf0\xc1" +
+	"=\x0c\x91\x81C)\xc2@\x05e \xfb\xe3\xab\xf3I" +
+	"Pa>\xeda\x8a\xa2\xbdrN\x92\x9b4\xc4\xd8\x17" +
+	"\x9f\x02\xbf|\xce\xfd~\x7f\xff\xce\x99\x98c{\x8d\xc9" +
+	"\xc4\x9aIL\xec5c\xe1\x9e\x91\xdbO}\x15{t" +
+	"\x8d\xd2\x19\x84\xd7\xdf.7Nl\xbbs\x9d\x0c\x8b(" +
+	"{\x86\x1d\x81}\x9eY\xc4\xc3g\xbe=\xdb\xbc\xe9\xf1" +
+	"\x8f\xde\xddL\x99\\a'\xd9Q\xd8\x1f3\x8b\xc8>" +
+	"\xc3\xce\x12\xc2icg\xe5\xf0\xefO\x7f@\"\x83^" +
+	"\x1a\x0a)\xf0?\xedYu\xce\x16\xfc8!|\xff\xf4" +
+	"\xab\xd7\xbd\x95\xab\x1f\x0e\x82\xb3\x9fr\x06\xfbKM\x9f" +
+	"\xd7\xf4\x1c\xbbt\xe8\xf8'\x17?\x1bH\xdfa0\xd8" +
+	"\xe3\xca\xba\xbd\xc3P\xf4\xb5+\xaf\x7f~\xe3\xbdS\xeb" +
+	"\x03\xe97\x8dm\xb0Oj\xfa\x1dM_\xb9\xad\x11\xff" +
+	"\xf5\xdc\xd5/\xfar\xd4\xf0\x0dc;l\xd3T0\xcc" +
+	"\x1c!<\xfc\xdc\xe4\x89K\xa7o\xbd0\x00\xb6w\x9b" +
+	"?\xda\xd3\x9a}X\xb3\x85\xc2\xfa<\x9f\xc9^\xeec" +
+	"U\xc5\xb2/\x983\xb0k\x1a\xae\x9a\xca\xc5(\xbf\xf0" +
+	"\xd2\xe87k?\xf5y\xd6>\xbf6\xbf\xb7\xbf\xd3\xec" +
+	"E\xcdn\\>\xf7$\x7f\xf1\xdao}\xec~X\x06" +
+	"Qv<\xc6`\xef\x8e)|2\xf6\x0b!\xbc\xf7\x81" +
+	"\xa9\x9f\xdf\xfaa\xec\x8fA\x09\xdebM\xc1\xdea)" +
+	"\xf8.+G\xbb\xc2\xb2[\xab\xb9\xf5\xfb\xcb\x86\xfe\xbd" +
+	"\xaf,\xbd\xba7\xb5o\xb1\xea\xd4\x83}n\xbd\xee\x94" +
+	"\x83\xaa[\x7f\xc2YZ\xb6\x1c?(\x01[=\xe0{" +
+	"I\xb7\xee;%@\xc4\xb9Ad\x80(\xbd\xff\x00\x91" +
+	"\xc8s\x88\x12C\x1a\xc8@\x05\x8b*\xf8\x18\x878\xc4" +
+	"\x90f,\x03F\x94\x9e\x9d!\x12%\x0e\xf1<CX" +
+	"\xd6_/\xe4\x89\x08qb\x88\x13B\xcf\xf5\xabJI" +
+	"\xc5R\xddj\x12\x90\"\xac\xd6\xa4\x97\x97\x81D\xaa\xdb" +
+	"\xc0\xd6?\x91}\xd6k\xbf\xb4(\x9b9\xa7Qt\x8f" +
+	"i\xc3#\x91\xe1q\xe5m\x8cC<\xc8\xd0\xf1;\xa9" +
+	"b\x13\x1c\xe2!\x86\xd0[\x94M\xa7\xd1\xb2f\x10\x83" +
+	"\xf1_\xd6\"\x03|S\xfd\x16dPt|_\xce;" +
+	"\xb4\x05\x07\xf7\x10\x89\x9d\x1cb\xcf`\x07\xc9\xc0Y\x09" +
+	"\xa2J\x0d\x14,\xe9S\x07\x03\x19lI\xf0\x7fH\xb9" +
+	"\xe5`\xba\xdc:\xb6\x05\x0fS\xc3\x93\xceI\xfd\xa9\xe1" +
+	"i?\"k\x8eNz\xd6\xabX2\xd0\xdd6\"\xd9" +
+	"\xc4Q\"\x11\xe7\x10c\x91\xc4\xc1\x80\x922p|\xdc" +
+	"L(q \xd5\xbd\x9a\x08*8x\xa0\x8a\xd2\xcb[" +
+	"2\x90}\xdfW}\x1b\xe1\x10\x19\x86\xa4_}\xd9\x19" +
+	"R\xab\xbe\xf5Z\xf6\x03\xa7q\xc0\xad\xea\xcdR\x8b\xd5" +
+	"_1\xb5/ws\x88\x89\x9e\xcd\xda\xb5\xbd[\xc6U" +
+	"\x7fA6*\x85|\xa7>\x96\xe7\xfaC\xe47e\xf3" +
+	"\x94S\x0e\xb8\xdb\xe8S\x1c\x1d\xa48\xda\xd3\xb8\x95N" +
+	"k\xd0\x8c\x06\xe5_\xbb\xd2;\xfd)n\xc4\xc3P\xab" +
+	"\xc8g\x89\xc4\x1c\x87XdH`#l\xc9TU\xa3" +
+	"\x168D\xc0\x90`\x7f\x87\xad;c\xe95\"\xe1q" +
+	"\x88W\x18\x12\xfc\xaf0\x03N\x94n\x1e!\x12+\x1c" +
+	"\xe2\x8d\xa8\xa9E\x97\xf81U\xfc\xe8\x05kg\xef\xb5" +
+	"g\x92\x92z\x94R\xdd\x97\xa5\x0d\xcc\xb7\xe7\x07j\x80" +
+	"\xd4\xee \xd5}O:%l\xef2Yr^\x89D" +
+	"/\xdf\xd0\x0b\xa0\xa7\xc39gi\xb9u\xd9\xf6\xce\xce" +
+	"LwvVe\xa5\xd2p|\xbf\xd3\xcb\x7f\x02\x00\x00" +
+	"\xff\xff\x1dX\x078"
 
 func RegisterSchema(reg *schemas.Registry) {
 	reg.Register(&schemas.Schema{
 		String: schema_b81e0a7d72638bf1,
 		Nodes: []uint64{
-			0x82c063683577d7ae,
+			0x874806c29c1c0838,
+			0x96ab4e0b79afcb59,
 			0xa057f75f642c0441,
 			0xa4db7870f180a59d,
 			0xb6cdb27758ce0260,
 			0xb89c9bf5ba83d0ea,
 			0xc0dbb3eb0c721ad0,
+			0xc818a5ce7d315b5f,
 			0xcf33420367b84949,
+			0xe587c61266c80312,
 			0xf6ea5e0354b3cffe,
 			0xf928dc8ae63a322b,
 		},

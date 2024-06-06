@@ -25,7 +25,7 @@ type ServerData struct {
 }
 
 type Message struct {
-	PlayerId int32
+	PlayerID int32
 	Text     string
 	NetworkMessage
 }
@@ -41,4 +41,7 @@ type ClusterJoinRequestMsg struct {
 type ClusterJoinResponseMsg struct {
 	ShardID string
 	Pos     Pos
+}
+
+type ClientConnectionRequestMsg struct {
 }

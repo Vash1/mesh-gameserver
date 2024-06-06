@@ -33,6 +33,6 @@ func GameMessage(msg *capnp.Message, sourceShard string) {
 	switch gameMsg.Which() {
 	case common.GameMessage_Which_chatMessage:
 		msgObj := message.ParseChatMessage(gameMsg)
-		log.Printf("Received chat message: %d %s", msgObj.PlayerId, msgObj.Text)
+		log.Printf("Received chat message: %d %s", msgObj.PlayerID, msgObj.Text)
 	}
 }

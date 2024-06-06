@@ -27,38 +27,18 @@ func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
 		return nil, err
 	}
 
-	chatMsg.SetPlayerId(msg.PlayerId)
+	chatMsg.SetPlayerID(msg.PlayerID)
 	chatMsg.SetText(msg.Text)
 	return data, nil
 }
 
-func HandleGameMessage(msg *capnp.Message) {
-	log.Printf("Received chat message:")
-	gameMsg, err := common.ReadRootGameMessage(msg)
-	if err != nil {
-		log.Println("Failed to read game message:", err)
-	}
-
-	switch gameMsg.Which() {
-	// case common.GameMessage_Which_playerMove:
-	// 	...
-	// case common.GameMessage_Which_playerAction:
-	// 	...
-	// case common.GameMessage_Which_gameStateUpdate:
-	// 	...
-	case common.GameMessage_Which_chatMessage:
-		msg := ParseChatMessage(gameMsg)
-		log.Printf("Received chat message: %d %s", msg.PlayerId, msg.Text)
-	}
-}
-
 func ParseChatMessage(msg common.GameMessage) *common.Message {
 	chatMessage, _ := msg.ChatMessage()
-	id := chatMessage.PlayerId()
+	id := chatMessage.PlayerID()
 	text, _ := chatMessage.Text()
 
 	return &common.Message{
-		PlayerId: id,
+		PlayerID: id,
 		Text:     text,
 	}
 }
@@ -94,7 +74,7 @@ func CreateClusterJoinResponseMessage(msg *common.ClusterJoinResponseMsg) (*capn
 		return nil, err
 	}
 
-	message.SetShardId(msg.ShardID)
+	message.SetShardID(msg.ShardID)
 	pos, err := message.NewPos()
 	if err != nil {
 		return nil, err
@@ -106,7 +86,7 @@ func CreateClusterJoinResponseMessage(msg *common.ClusterJoinResponseMsg) (*capn
 }
 
 func ParseClusterJoinResponseMessage(msg common.ClusterJoinResponse) *common.ClusterJoinResponseMsg {
-	shardID, _ := msg.ShardId()
+	shardID, _ := msg.ShardID()
 	pos, _ := msg.Pos()
 
 	return &common.ClusterJoinResponseMsg{
@@ -115,18 +95,22 @@ func ParseClusterJoinResponseMessage(msg common.ClusterJoinResponse) *common.Clu
 	}
 }
 
-// 	data, segment, err := newCapnpMessage()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	joinMsg, err := common.New(segment)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func CreateClientConnectionMsg(msg common.ClientConnectionRequestMsg) (*capnp.Message, error) {
+	data, segment, err := newCapnpMessage()
+	if err != nil {
+		return nil, err
+	}
+	_, err = common.NewRootClientConnectionRequest(segment)
+	if err != nil {
+		return nil, err
+	}
 
-// 	joinMsg.SetAddress("1")
-// 	return data, nil
-// }
+	return data, nil
+}
+
+func ParseClientConnectionRequestMsg(msg common.ClientConnectionRequest) *common.ClientConnectionRequestMsg {
+	return &common.ClientConnectionRequestMsg{}
+}
 
 func MsgToBytes(msg *capnp.Message) ([]byte, bool) {
 	bytes, err := msg.Marshal()

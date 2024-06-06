@@ -12,18 +12,18 @@ struct GameMessage {
   }
 }
 
-struct Position {
+struct Vector {
   x @0 :Int32;
   y @1 :Int32;
 }
 
 struct PlayerMove {
-  playerId @0 :Int32;
-  position @1 :Position;
+  playerID @0 :Int32;
+  position @1 :Vector;
 }
 
 struct PlayerAction {
-  playerId @0 :Int32;
+  playerID @0 :Int32;
   action @1 :Text;
 }
 
@@ -32,12 +32,12 @@ struct GameStateUpdate {
 }
 
 struct PlayerState {
-  playerId @0 :Int32;
-  position @1 :Position;
+  playerID @0 :Int32;
+  position @1 :Vector;
 }
 
 struct ChatMessage {
-  playerId @0 :Int32;
+  playerID @0 :Int32;
   text @1 :Text;
 }
 #
@@ -52,6 +52,19 @@ struct ClusterJoinRequest {
 }
 
 struct ClusterJoinResponse {
-  shardId @0 :Text;
-  pos @1 :Position;
+  shardID @0 :Text;
+  pos @1 :Vector;
+}
+
+struct MapData {
+  size @0 :Vector;
+}
+
+struct ClientConnectionRequest {
+}
+
+struct ClientConnectionResponse {
+  clientID @0 :Text;
+  position @1 :Vector;
+  mapData @2 :MapData;
 }

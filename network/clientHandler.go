@@ -1,6 +1,7 @@
 package network
 
 import (
+	"base/common"
 	"base/message"
 	"fmt"
 
@@ -24,6 +25,12 @@ func NewClientHandler(addr string) *ClientHandler {
 
 func (client *ClientHandler) Connect() {
 	client.OpenStream()
+	msg, err := message.CreateClientConnectionMsg(common.ClientConnectionRequestMsg{})
+	if err != nil {
+		fmt.Println("Error creating message")
+		return
+	}
+	client.SendReliable(msg)
 }
 
 func ListenUnreliable() {

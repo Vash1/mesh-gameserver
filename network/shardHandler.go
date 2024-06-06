@@ -9,13 +9,21 @@ import (
 	"sync"
 
 	"capnproto.org/go/capnp/v3"
+	"github.com/google/uuid"
 )
 
 type ShardHandler struct {
 	server               *NetServer
 	MasterClient         *NetClient
 	clientConnectionChan chan *connection
+	clientConnections    map[string]*ClientConnection
 	PoolJoined           chan struct{}
+}
+
+type ClientConnection struct {
+	id         string
+	stream     *quicStream
+	connection *connection
 }
 
 func (c *NetClient) SendUnreliable(msg *capnp.Message) {
@@ -60,8 +68,10 @@ func NewShardHandler() *ShardHandler {
 		return nil
 	}
 	return &ShardHandler{
-		server:     server,
-		PoolJoined: make(chan struct{}),
+		server:               server,
+		clientConnectionChan: make(chan *connection),
+		clientConnections:    make(map[string]*ClientConnection),
+		PoolJoined:           make(chan struct{}),
 	}
 }
 
@@ -80,8 +90,6 @@ func (h *ShardHandler) GetAddress() string {
 }
 
 func (h *ShardHandler) AcceptConnections() {
-	h.clientConnectionChan = make(chan *connection)
-
 	for {
 		conn, err := h.server.AcceptConnection()
 		if err != nil {
@@ -92,24 +100,42 @@ func (h *ShardHandler) AcceptConnections() {
 	}
 }
 func (server *ShardHandler) AcceptData() {
+	go func() {
+		for range messageHandler.ClientConnectionRequestChan {
+			fmt.Println("Client joined")
+			for client := range server.clientConnections {
+				fmt.Println(client)
+			}
+		}
+	}()
+
 	for conn := range server.clientConnectionChan {
 		go func(conn *connection) {
+			msgHandler := messageHandler.NewMessageHandler()
+			msgHandler.AddHandler(messageHandler.ClientConnectionRequest)
 			fmt.Println("starting stream goroutine")
 			stream, err := conn.AcceptStream()
 			if err != nil {
 				fmt.Printf("Error accepting stream: %s\n", err)
 				return
 			}
-
 			quicStream := quicStream{stream, &sync.Mutex{}}
+
+			clientConn := ClientConnection{
+				id:         uuid.New().String(),
+				stream:     &quicStream,
+				connection: conn,
+			}
+			server.clientConnections[clientConn.id] = &clientConn
+
 			for {
 				msg, ok := read(quicStream)
 				if !ok {
 					fmt.Println("Stream closed")
+					delete(server.clientConnections, clientConn.id)
 					return
 				}
-				message.HandleGameMessage(msg)
-				Respond(quicStream)
+				msgHandler.HandleMessage(msg, clientConn.id)
 			}
 		}(conn)
 
@@ -122,14 +148,14 @@ func (server *ShardHandler) AcceptData() {
 					return
 				}
 				msg, _ := message.BytesToMsg(bytes)
-				message.HandleGameMessage(msg)
+				_ = msg // TODO: handle datagrams
 			}
 		}(conn)
 	}
 }
 
 func Respond(stream quicStream) {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerId: rand.Int32N(20), Text: "stream"})
+	chatMessage, err := message.CreateChatMessage(common.Message{PlayerID: rand.Int32N(20), Text: "stream"})
 	if err != nil {
 		return
 	}

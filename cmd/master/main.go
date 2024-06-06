@@ -10,7 +10,7 @@ import (
 )
 
 func createMsg() *capnp.Message {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerId: rand.Int32N(20), Text: "stream"})
+	chatMessage, err := message.CreateChatMessage(common.Message{PlayerID: rand.Int32N(20), Text: "stream"})
 	if err != nil {
 		return nil
 	}
