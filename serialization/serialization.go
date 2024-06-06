@@ -1,7 +1,8 @@
-package message
+package serialization
 
 import (
-	"base/common"
+	capnp_schema "base/capnp"
+	models "base/models"
 	"log"
 
 	"capnproto.org/go/capnp/v3"
@@ -12,12 +13,12 @@ func newCapnpMessage() (*capnp.Message, *capnp.Segment, error) {
 	return data, segment, err
 }
 
-func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
+func SerializeChatMessage(msg models.ChatMessage) (*capnp.Message, error) {
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
 	}
-	message, err := common.NewRootGameMessage(segment)
+	message, err := capnp_schema.NewRootGameMessage(segment)
 	if err != nil {
 		return nil, err
 	}
@@ -32,22 +33,22 @@ func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
 	return data, nil
 }
 
-func ParseChatMessage(msg common.GameMessage) *common.Message {
+func DeserializeChatMessage(msg capnp_schema.GameMessage) *models.ChatMessage {
 	chatMessage, _ := msg.ChatMessage()
 	id := chatMessage.PlayerID()
 	text, _ := chatMessage.Text()
 
-	return &common.Message{
+	return &models.ChatMessage{
 		PlayerID: id,
 		Text:     text,
 	}
 }
-func CreateClusterJoinMessage(msg common.ClusterJoinRequestMsg) (*capnp.Message, error) {
+func SerializeClusterJoinRequest(msg models.ClusterJoinRequest) (*capnp.Message, error) {
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
 	}
-	message, err := common.NewRootClusterJoinRequest(segment)
+	message, err := capnp_schema.NewRootClusterJoinRequest(segment)
 	if err != nil {
 		return nil, err
 	}
@@ -56,20 +57,20 @@ func CreateClusterJoinMessage(msg common.ClusterJoinRequestMsg) (*capnp.Message,
 	return data, nil
 }
 
-func ParseClusterJoinMessage(msg common.ClusterJoinRequest) *common.ClusterJoinRequestMsg {
+func DeserializeClusterJoinRequest(msg capnp_schema.ClusterJoinRequest) *models.ClusterJoinRequest {
 	address, _ := msg.Address()
 
-	return &common.ClusterJoinRequestMsg{
+	return &models.ClusterJoinRequest{
 		Address: address,
 	}
 }
 
-func CreateClusterJoinResponseMessage(msg *common.ClusterJoinResponseMsg) (*capnp.Message, error) {
+func SerializeClusterJoinResponse(msg *models.ClusterJoinResponse) (*capnp.Message, error) {
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
 	}
-	message, err := common.NewRootClusterJoinResponse(segment)
+	message, err := capnp_schema.NewRootClusterJoinResponse(segment)
 	if err != nil {
 		return nil, err
 	}
@@ -85,22 +86,22 @@ func CreateClusterJoinResponseMessage(msg *common.ClusterJoinResponseMsg) (*capn
 	return data, nil
 }
 
-func ParseClusterJoinResponseMessage(msg common.ClusterJoinResponse) *common.ClusterJoinResponseMsg {
+func DeserializeClusterJoinResponse(msg capnp_schema.ClusterJoinResponse) *models.ClusterJoinResponse {
 	shardID, _ := msg.ShardID()
 	pos, _ := msg.Pos()
 
-	return &common.ClusterJoinResponseMsg{
+	return &models.ClusterJoinResponse{
 		ShardID: shardID,
-		Pos:     common.Pos{X: pos.X(), Y: pos.Y()},
+		Pos:     models.Vector{X: pos.X(), Y: pos.Y()},
 	}
 }
 
-func CreateClientConnectionMsg(msg common.ClientConnectionRequestMsg) (*capnp.Message, error) {
+func SerializeClientConnectionRequest(msg models.ClientConnectionRequest) (*capnp.Message, error) {
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
 	}
-	_, err = common.NewRootClientConnectionRequest(segment)
+	_, err = capnp_schema.NewRootClientConnectionRequest(segment)
 	if err != nil {
 		return nil, err
 	}
@@ -108,8 +109,8 @@ func CreateClientConnectionMsg(msg common.ClientConnectionRequestMsg) (*capnp.Me
 	return data, nil
 }
 
-func ParseClientConnectionRequestMsg(msg common.ClientConnectionRequest) *common.ClientConnectionRequestMsg {
-	return &common.ClientConnectionRequestMsg{}
+func DeserializeClientConnectionRequest(msg capnp_schema.ClientConnectionRequest) *models.ClientConnectionRequest {
+	return &models.ClientConnectionRequest{}
 }
 
 func MsgToBytes(msg *capnp.Message) ([]byte, bool) {

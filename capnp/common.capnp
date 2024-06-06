@@ -1,7 +1,7 @@
 using Go = import "/go.capnp";
 @0xb81e0a7d72638bf1;
-$Go.package("common");
-$Go.import("base/common");
+$Go.package("capnp");
+$Go.import("base/capnp");
 
 struct GameMessage {
   union {

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
 	"base/network"
+	"base/serialization"
 	"math/rand/v2"
 
 	"capnproto.org/go/capnp/v3"
 )
 
 func createMsg() *capnp.Message {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerID: rand.Int32N(20), Text: "stream"})
+	chatMessage, err := serialization.SerializeChatMessage(models.ChatMessage{PlayerID: rand.Int32N(20), Text: "stream"})
 	if err != nil {
 		return nil
 	}

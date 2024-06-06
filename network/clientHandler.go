@@ -1,8 +1,8 @@
 package network
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
+	"base/serialization"
 	"fmt"
 
 	"capnproto.org/go/capnp/v3"
@@ -25,7 +25,7 @@ func NewClientHandler(addr string) *ClientHandler {
 
 func (client *ClientHandler) Connect() {
 	client.OpenStream()
-	msg, err := message.CreateClientConnectionMsg(common.ClientConnectionRequestMsg{})
+	msg, err := serialization.SerializeClientConnectionRequest(models.ClientConnectionRequest{})
 	if err != nil {
 		fmt.Println("Error creating message")
 		return
@@ -37,7 +37,7 @@ func ListenUnreliable() {
 }
 
 func (client *ClientHandler) SendUnreliable(msg *capnp.Message) {
-	bytes, _ := message.MsgToBytes(msg)
+	bytes, _ := serialization.MsgToBytes(msg)
 	client.quicConnection.SendDatagram(bytes)
 
 }

@@ -1,9 +1,9 @@
 package network
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
 	"base/network/messageHandler"
+	"base/serialization"
 	"fmt"
 	"math/rand/v2"
 	"sync"
@@ -27,7 +27,7 @@ type ClientConnection struct {
 }
 
 func (c *NetClient) SendUnreliable(msg *capnp.Message) {
-	bytes, _ := message.MsgToBytes(msg)
+	bytes, _ := serialization.MsgToBytes(msg)
 	c.quicConnection.SendDatagram(bytes)
 
 }
@@ -144,10 +144,10 @@ func (server *ShardHandler) AcceptData() {
 			for {
 				bytes, err := conn.receiveDatagram()
 				if err != nil {
-					fmt.Printf("Error reading datagram: %s\n", err)
+					// fmt.Printf("Error reading datagram: %s\n", err)
 					return
 				}
-				msg, _ := message.BytesToMsg(bytes)
+				msg, _ := serialization.BytesToMsg(bytes)
 				_ = msg // TODO: handle datagrams
 			}
 		}(conn)
@@ -155,7 +155,7 @@ func (server *ShardHandler) AcceptData() {
 }
 
 func Respond(stream quicStream) {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerID: rand.Int32N(20), Text: "stream"})
+	chatMessage, err := serialization.SerializeChatMessage(models.ChatMessage{PlayerID: rand.Int32N(20), Text: "stream"})
 	if err != nil {
 		return
 	}

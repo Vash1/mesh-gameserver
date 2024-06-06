@@ -174,7 +174,6 @@ func (serverConn *connection) AcceptStream() (quic.Stream, error) {
 func (serverConn *connection) receiveDatagram() ([]byte, error) {
 	datagram, err := serverConn.ReceiveDatagram(context.Background())
 	if err != nil {
-		log.Println("Failed to receive datagram:", err)
 		return nil, err
 	}
 	return datagram, nil
@@ -224,7 +223,6 @@ func read(stream quic.Stream) (*capnp.Message, bool) {
 			fmt.Println("Stream closed by client.")
 			return nil, false
 		}
-		log.Println("Failed to decode message:", err)
 		return nil, false
 	}
 
