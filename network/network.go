@@ -72,7 +72,7 @@ func NewNetServer(config ServerConfig) (*NetServer, error) {
 	}
 
 	tlsConfig := generateTLSConfig()
-	ln, err := quicTransport.Listen(tlsConfig, &quic.Config{EnableDatagrams: true})
+	ln, err := quicTransport.Listen(tlsConfig, &quic.Config{EnableDatagrams: true, MaxIdleTimeout: 10 * time.Second, KeepAlivePeriod: 5 * time.Second})
 	if err != nil {
 		return nil, err
 	}

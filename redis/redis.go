@@ -54,6 +54,14 @@ func (redis *Redis) AddToSet(key string, val interface{}) error {
 	return nil
 }
 
+func (redis *Redis) RemoveFromSet(key string, val interface{}) error {
+	err := redis.client.SRem(ctx, key, val).Err()
+	if err != nil {
+		panic(err)
+	}
+	return nil
+}
+
 func (redis *Redis) GetRandomFromSet(key string) interface{} {
 	val, err := redis.client.SRandMember(ctx, key).Result()
 	if err != nil {

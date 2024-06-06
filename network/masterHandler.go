@@ -14,7 +14,6 @@ import (
 type MasterHandler struct {
 	*NetServer
 	shardConnectionChan chan *connection
-	redis               *redis.Redis
 	connectedShards     map[string]*ShardConnection
 	// Shard
 }
@@ -25,7 +24,7 @@ type ShardConnection struct {
 	stream  *quicStream
 }
 
-var REDIS_SHARD_KEY = "shard_addresses"
+var redisClient *redis.Redis = redis.NewClient()
 
 // Shard:
 func NewMasterHandler() *MasterHandler {
@@ -37,14 +36,12 @@ func NewMasterHandler() *MasterHandler {
 	return &MasterHandler{
 		NetServer:           server,
 		shardConnectionChan: make(chan *connection),
-		redis:               redis.NewClient(),
 		connectedShards:     make(map[string]*ShardConnection),
 	}
-
 }
 
 func (server *MasterHandler) ResetRedisShards() {
-	server.redis.DeleteAll(REDIS_SHARD_KEY)
+	redisClient.DeleteAll(REDIS_SHARD_KEY)
 }
 
 func (server *MasterHandler) AcceptConnections() {
@@ -58,8 +55,12 @@ func (server *MasterHandler) AcceptConnections() {
 	}
 }
 
-func (shard *ShardConnection) addToPool(redis *redis.Redis) {
-	redis.AddToSet(REDIS_SHARD_KEY, shard.address)
+func (server *MasterHandler) addToPool(shard *ShardConnection) {
+	redisClient.AddToSet(REDIS_SHARD_KEY, shard.address)
+}
+
+func (server *MasterHandler) removeFromPool(shard *ShardConnection) {
+	redisClient.RemoveFromSet(REDIS_SHARD_KEY, shard.address)
 }
 
 func (server *MasterHandler) BroadcastChat() {
@@ -75,7 +76,7 @@ func (server *MasterHandler) AcceptStreams() {
 		for shardJoined := range messageHandler.ShardJoinChan {
 			sourceShard := server.connectedShards[shardJoined.SourceID]
 			sourceShard.address = shardJoined.Address
-			sourceShard.addToPool(server.redis)
+			server.addToPool(sourceShard)
 			shardJoinResponse, _ := message.CreateClusterJoinResponseMessage(&common.ClusterJoinResponseMsg{ShardID: sourceShard.id, Pos: common.Pos{X: 3, Y: 5}})
 			sourceShard.stream.SendMessage(shardJoinResponse)
 		}
@@ -100,6 +101,7 @@ func (server *MasterHandler) AcceptStreams() {
 			for {
 				msg, ok := read(stream)
 				if !ok {
+					server.removeFromPool(&shardConn)
 					fmt.Println("Stream closed")
 					return
 				}
