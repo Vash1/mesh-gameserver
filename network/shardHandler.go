@@ -110,7 +110,6 @@ func (server *ShardHandler) AcceptData() {
 				}
 				message.HandleGameMessage(msg)
 				Respond(quicStream)
-				// go server.handleStream(quicStream)
 			}
 		}(conn)
 
@@ -129,15 +128,6 @@ func (server *ShardHandler) AcceptData() {
 	}
 }
 
-func (server *ShardHandler) AcceptDatagrams() {
-	for conn := range server.clientConnectionChan {
-		go func(conn *connection) {
-			fmt.Println("starting datagram goroutine")
-
-		}(conn)
-	}
-}
-
 func Respond(stream quicStream) {
 	chatMessage, err := message.CreateChatMessage(common.Message{PlayerId: rand.Int32N(20), Text: "stream"})
 	if err != nil {
@@ -146,11 +136,4 @@ func Respond(stream quicStream) {
 	fmt.Println("responding")
 	stream.SendMessage(chatMessage)
 
-}
-
-func initShardMessageHandlers() *messageHandler.MessageHandler {
-	handler := messageHandler.NewMessageHandler()
-	handler.AddHandler(messageHandler.ShardJoinResponse)
-	handler.AddHandler(messageHandler.ClientGameMessage)
-	return handler
 }

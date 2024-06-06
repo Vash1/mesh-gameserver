@@ -20,10 +20,6 @@ import (
 	quic "github.com/quic-go/quic-go"
 )
 
-// type Channel struct {
-// 	chat chan *common.Message
-// }
-
 type ServerConfig struct {
 	LocalAddr string
 }

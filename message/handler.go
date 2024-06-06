@@ -7,43 +7,12 @@ import (
 	"capnproto.org/go/capnp/v3"
 )
 
-// type networkChatMessage struct {
-// 	playerId int32
-// 	common.Message
-// }
-
 func newCapnpMessage() (*capnp.Message, *capnp.Segment, error) {
 	data, segment, err := capnp.NewMessage(capnp.SingleSegment(nil))
 	return data, segment, err
 }
 
-// func (c *Client) CreateSimpleChatMessage(msg common.Message) (*capnp.Message, error) {
-// 	// networkMsg := &networkChatMessage{
-// 	// 	playerId: c.id,
-// 	// 	Message:  msg,
-// 	// }
-
-// 	data, segment, err := newCapnpMessage()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	chatMsg, err := common.NewRootChatMessage(segment)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	chatMsg.SetPlayerId(c.id)
-// 	chatMsg.SetText(msg.Text)
-// 	return data, nil
-// }
-
 func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
-	// networkMsg := &networkChatMessage{
-	// 	playerId: c.id,
-	// 	Message:  msg,
-	// }
-
 	data, segment, err := newCapnpMessage()
 	if err != nil {
 		return nil, err
@@ -62,26 +31,6 @@ func CreateChatMessage(msg common.Message) (*capnp.Message, error) {
 	chatMsg.SetText(msg.Text)
 	return data, nil
 }
-
-// func HandleGameMessage(msg *capnp.Message, channels *Event, source string) {
-// 	gameMsg, err := common.ReadRootGameMessage(msg)
-// 	if err != nil {
-// 		log.Println("Failed to read game message:", err)
-// 	}
-
-// 	switch gameMsg.Which() {
-// 	// case common.GameMessage_Which_playerMove:
-// 	// 	...
-// 	// case common.GameMessage_Which_playerAction:
-// 	// 	...
-// 	// case common.GameMessage_Which_gameStateUpdate:
-// 	// 	...
-// 	case common.GameMessage_Which_chatMessage:
-// 		msg := ParseChatMessage(gameMsg)
-// 		log.Printf("Received %s chat message: %d %s", source, msg.PlayerId, msg.Text)
-// 		channels.chat <- msg
-// 	}
-// }
 
 func HandleGameMessage(msg *capnp.Message) {
 	log.Printf("Received chat message:")

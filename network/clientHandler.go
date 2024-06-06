@@ -20,31 +20,13 @@ func NewClientHandler(addr string) *ClientHandler {
 	return &ClientHandler{
 		NetClient: client,
 	}
-
 }
 
 func (client *ClientHandler) Connect() {
 	client.OpenStream()
-	// ResolveLocalUDP -> localaddr net.UDPAddr
-	// * requirement from local udp conn
-	// Listen Local UDP -> conn net.UDPConn
-	// * requirement from transport
-	// Setup QUIC Transport -> quic.Transport
-	// * requirement from Dial
-	// ResolveRemoteUDP -> remoteaddr net.UDPAddr
-	// * requirement from Dial
-	// NewConnection{Dial()} -> quic.Connection
-	// * requirement from send/receive datagrams
-	// * requirement from OpenStream
-	// OpenStream -> quic.stream
 }
 
-// clienthandler.SendReliable()
 func ListenUnreliable() {
-	// quic.Connection.ReceiveDatagram
-	// Unmarshal
-	// filter if timestamp is older than most recent message
-	// HandleGameMessage(channels)
 }
 
 func (client *ClientHandler) SendUnreliable(msg *capnp.Message) {
@@ -55,8 +37,6 @@ func (client *ClientHandler) SendUnreliable(msg *capnp.Message) {
 
 func (client *ClientHandler) ListenReliable() {
 	go client.Listen()
-	// decode(quic.Stream) -> capnp.Message
-	// HandleGameMessage(capnp.Message, channels)
 }
 
 func (client *ClientHandler) SendReliable(msg *capnp.Message) {
@@ -70,5 +50,3 @@ func (client *ClientHandler) SendReliable(msg *capnp.Message) {
 
 	fmt.Println("msg sent")
 }
-
-// logic splits here for handling client side messages via channels

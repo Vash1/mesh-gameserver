@@ -15,7 +15,6 @@ type MasterHandler struct {
 	*NetServer
 	shardConnectionChan chan *connection
 	connectedShards     map[string]*ShardConnection
-	// Shard
 }
 
 type ShardConnection struct {
@@ -107,10 +106,8 @@ func (server *MasterHandler) AcceptStreams() {
 				}
 				msgHandler.HandleMessage(msg, shardConn.id)
 				// Respond(quicStream)
-				// go server.handleStream(quicStream)
 			}
 		}(conn)
-
 	}
 }
 

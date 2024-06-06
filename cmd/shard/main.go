@@ -19,25 +19,6 @@ func createMsg(source string) *capnp.Message {
 	return chatMessage
 }
 func main() {
-	// redis := redis.NewClient()
-
-	// _ = rdb
-	/*
-		// for shard client
-		datagramListener = server.listen(datagramConfig)
-		  (sends constant game state updates to all clients)
-		chatListener = server.listen(streamConfig)
-		eventListener = server.listen(streamConfig)
-		  (receives player actions and events)
-
-		streams:
-
-
-	*/
-	// server := network.NewServer(true, true, true, true)
-	// go server.BroadcastChat()
-	// server.AcceptConnections()
-
 	shard := network.NewShardHandler()
 	shard.JoinCluster()
 	if shard.MasterClient == nil {
@@ -66,15 +47,8 @@ func main() {
 		}()
 	}
 
-	// chatMessage = createMsg()
-	// client.SendReliable(chatMessage)
-
-	// wg.Wait()
-
 	go shard.AcceptConnections()
 	go shard.AcceptData()
-	// go shard.AcceptStreams()
-	// go shard.AcceptDatagrams()
 	select {}
 
 }
