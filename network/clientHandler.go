@@ -2,6 +2,7 @@ package network
 
 import (
 	models "base/models"
+	"base/network/messageHandler"
 	"base/serialization"
 	"fmt"
 
@@ -43,7 +44,17 @@ func (client *ClientHandler) SendUnreliable(msg *capnp.Message) {
 }
 
 func (client *ClientHandler) ListenReliable() {
-	go client.Listen()
+	msgHandler := messageHandler.NewMessageHandler()
+	msgHandler.AddHandler(messageHandler.ClientConnectionResponse)
+	// go client.Listen()
+	for {
+		msg, ok := read(client.QuicStream)
+		if !ok {
+			fmt.Println("Stream closed")
+			return
+		}
+		msgHandler.HandleMessage(msg, "shard")
+	}
 }
 
 func (client *ClientHandler) SendReliable(msg *capnp.Message) {
@@ -54,6 +65,4 @@ func (client *ClientHandler) SendReliable(msg *capnp.Message) {
 	if err != nil {
 		fmt.Println("couldn't write to stream")
 	}
-
-	fmt.Println("msg sent")
 }

@@ -29,19 +29,7 @@ func main() {
 		return
 	}
 	client.Connect()
-	// client.ListenReliable()
-
-	// for i := 0; i < 5; i++ {
-	// 	go func() {
-	// 		chatMessage := createMsg("stream")
-	// 		unrealiableChatMessage := createMsg("datagram")
-	// 		for j := 0; j < 10; j++ {
-	// 			client.SendReliable(chatMessage)
-	// 			client.SendUnreliable(unrealiableChatMessage)
-	// 			time.Sleep(1 * time.Second)
-	// 		}
-	// 	}()
-	// }
+	client.ListenReliable()
 
 	select {}
 }

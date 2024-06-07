@@ -13,8 +13,13 @@ struct GameMessage {
 }
 
 struct Vector {
-  x @0 :Int32;
-  y @1 :Int32;
+  x @0 :Float32;
+  y @1 :Float32;
+}
+
+struct Dimensions {
+  width @0 :Int32;
+  height @1 :Int32;
 }
 
 struct PlayerMove {
@@ -57,7 +62,7 @@ struct ClusterJoinResponse {
 }
 
 struct MapData {
-  size @0 :Vector;
+  size @0 :Dimensions;
 }
 
 struct ClientConnectionRequest {

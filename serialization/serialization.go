@@ -113,6 +113,54 @@ func DeserializeClientConnectionRequest(msg capnp_schema.ClientConnectionRequest
 	return &models.ClientConnectionRequest{}
 }
 
+func SerializeClientConnectionResponse(msg *models.ClientConnectionResponse) (*capnp.Message, error) {
+	data, segment, err := newCapnpMessage()
+	if err != nil {
+		return nil, err
+	}
+	message, err := capnp_schema.NewRootClientConnectionResponse(segment)
+	if err != nil {
+		return nil, err
+	}
+	message.SetClientID(msg.ClientID)
+
+	pos, err := message.NewPosition()
+	if err != nil {
+		return nil, err
+	}
+	pos.SetX(msg.Position.X)
+	pos.SetY(msg.Position.Y)
+
+	mapData, err := message.NewMapData()
+	if err != nil {
+		return nil, err
+	}
+
+	size, err := mapData.NewSize()
+	if err != nil {
+		return nil, err
+	}
+	size.SetWidth(msg.MapData.Size.Width)
+	size.SetHeight(msg.MapData.Size.Height)
+
+	return data, nil
+}
+
+func DeserializeClientConnectionResponse(msg capnp_schema.ClientConnectionResponse) *models.ClientConnectionResponse {
+	clientID, _ := msg.ClientID()
+	pos, _ := msg.Position()
+	mapData, _ := msg.MapData()
+	mapSize, _ := mapData.Size()
+
+	return &models.ClientConnectionResponse{
+		ClientID: clientID,
+		Position: models.Vector{X: pos.X(), Y: pos.Y()},
+		MapData: models.MapData{
+			Size: models.Dimensions{Width: mapSize.Width(), Height: mapSize.Height()},
+		},
+	}
+}
+
 func MsgToBytes(msg *capnp.Message) ([]byte, bool) {
 	bytes, err := msg.Marshal()
 	if err != nil {

@@ -1,8 +1,13 @@
 package models
 
 type Vector struct {
-	X int32
-	Y int32
+	X float32
+	Y float32
+}
+
+type Dimensions struct {
+	Width  int32
+	Height int32
 }
 
 var EmptyPos = Vector{X: 0, Y: 0}
@@ -44,14 +49,15 @@ type ClusterJoinResponse struct {
 }
 
 type ClientConnectionRequest struct {
+	NetworkMessage
 }
 
 type ClientConnectionResponse struct {
-	clientID string
-	position Vector
-	mapData  MapData
+	ClientID string
+	Position Vector
+	MapData  MapData
 }
 
 type MapData struct {
-	size Vector
+	Size Dimensions
 }

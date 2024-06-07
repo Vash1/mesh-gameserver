@@ -14,14 +14,13 @@ var ShardJoinResponseChan = make(chan *models.ClusterJoinResponse, 10)
 var ClientConnectionRequestChan = make(chan *models.ClientConnectionRequest, 10)
 
 func ShardJoinResponse(msg *capnp.Message, source string) {
-	fmt.Println("Handling ShardJoinResponse")
 	rootMsg, err := capnp_schema.ReadRootClusterJoinResponse(msg)
 	if err != nil {
 		log.Println("Failed to read ShardJoinResponse:", err)
 	}
 	joinMsg := serialization.DeserializeClusterJoinResponse(rootMsg)
-	log.Printf("shard %s is located at: %s", joinMsg.ShardID, fmt.Sprint(joinMsg.Pos))
 	ShardJoinResponseChan <- joinMsg
+	log.Printf("Received ShardJoinResponse: id: %s pos: %s", joinMsg.ShardID, fmt.Sprint(joinMsg.Pos))
 }
 
 func ClientGameMessage(msg *capnp.Message, source string) {
@@ -43,13 +42,13 @@ func ClientGameMessage(msg *capnp.Message, source string) {
 	}
 }
 
-func ClientConnectionRequest(msg *capnp.Message, source string) {
-	fmt.Println("Handling ClientConnectionRequest")
+func ClientConnectionRequest(msg *capnp.Message, sourceClient string) {
 	rootMsg, err := capnp_schema.ReadRootClientConnectionRequest(msg)
 	if err != nil {
 		log.Println("Failed to read ClientConnectionRequest:", err)
 	}
 	connMsg := serialization.DeserializeClientConnectionRequest(rootMsg)
+	connMsg.SourceID = sourceClient
 	ClientConnectionRequestChan <- connMsg
-	log.Printf("Received client connection request: %s", source)
+	log.Printf("Received ClientConnectionRequest: %s", sourceClient)
 }

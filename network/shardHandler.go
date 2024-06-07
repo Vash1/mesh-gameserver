@@ -24,6 +24,7 @@ type ClientConnection struct {
 	id         string
 	stream     *quicStream
 	connection *connection
+	isActive   bool
 }
 
 func (c *NetClient) SendUnreliable(msg *capnp.Message) {
@@ -51,10 +52,14 @@ func (h *NetClient) ListenReliable(PoolJoined chan struct{}) {
 }
 
 func (c *NetClient) SendReliable(msg *capnp.Message) {
-	c.QuicStream.mu.Lock()
-	defer c.QuicStream.mu.Unlock()
+	c.QuicStream.SendReliable(msg)
+}
 
-	err := c.QuicStream.SendMessage(msg)
+func (s *quicStream) SendReliable(msg *capnp.Message) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	err := s.SendMessage(msg)
 	if err != nil {
 		fmt.Println("couldn't write to stream")
 	}
@@ -101,11 +106,16 @@ func (h *ShardHandler) AcceptConnections() {
 }
 func (server *ShardHandler) AcceptData() {
 	go func() {
-		for range messageHandler.ClientConnectionRequestChan {
-			fmt.Println("Client joined")
-			for client := range server.clientConnections {
-				fmt.Println(client)
+		for newClient := range messageHandler.ClientConnectionRequestChan {
+			client := server.clientConnections[newClient.SourceID]
+			client.isActive = true
+			response := models.ClientConnectionResponse{ClientID: client.id, Position: models.Vector{X: rand.Float32() * 100, Y: rand.Float32() * 100}, MapData: models.MapData{Size: models.Dimensions{Width: 10, Height: 10}}}
+			msg, err := serialization.SerializeClientConnectionResponse(&response)
+			if err != nil {
+				fmt.Println("Error serializing client connection response")
+				return
 			}
+			client.stream.SendReliable(msg)
 		}
 	}()
 
@@ -113,7 +123,6 @@ func (server *ShardHandler) AcceptData() {
 		go func(conn *connection) {
 			msgHandler := messageHandler.NewMessageHandler()
 			msgHandler.AddHandler(messageHandler.ClientConnectionRequest)
-			fmt.Println("starting stream goroutine")
 			stream, err := conn.AcceptStream()
 			if err != nil {
 				fmt.Printf("Error accepting stream: %s\n", err)
@@ -140,7 +149,6 @@ func (server *ShardHandler) AcceptData() {
 		}(conn)
 
 		go func(conn *connection) {
-			fmt.Println("starting datagram goroutine")
 			for {
 				bytes, err := conn.receiveDatagram()
 				if err != nil {

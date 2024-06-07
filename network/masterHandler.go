@@ -18,9 +18,10 @@ type MasterHandler struct {
 }
 
 type ShardConnection struct {
-	address string
-	id      string
-	stream  *quicStream
+	address  string
+	id       string
+	stream   *quicStream
+	isActive bool
 }
 
 var redisClient *redis.Redis = redis.NewClient()
@@ -73,12 +74,13 @@ func (server *MasterHandler) BroadcastChat() {
 
 func (server *MasterHandler) AcceptStreams() {
 	go func() {
-		for shardJoined := range messageHandler.ShardJoinChan {
-			sourceShard := server.shardConnections[shardJoined.SourceID]
-			sourceShard.address = shardJoined.Address
-			server.addToPool(sourceShard)
-			shardJoinResponse, _ := serialization.SerializeClusterJoinResponse(&models.ClusterJoinResponse{ShardID: sourceShard.id, Pos: models.Vector{X: 3, Y: 5}})
-			sourceShard.stream.SendMessage(shardJoinResponse)
+		for newShard := range messageHandler.ShardJoinChan {
+			shard := server.shardConnections[newShard.SourceID]
+			shard.address = newShard.Address
+			shard.isActive = true
+			server.addToPool(shard)
+			shardJoinResponse, _ := serialization.SerializeClusterJoinResponse(&models.ClusterJoinResponse{ShardID: shard.id, Pos: models.Vector{X: 3, Y: 5}})
+			shard.stream.SendMessage(shardJoinResponse)
 		}
 	}()
 
