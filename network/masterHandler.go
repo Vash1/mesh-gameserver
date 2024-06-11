@@ -1,10 +1,10 @@
 package network
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
 	"base/network/messageHandler"
 	"base/redis"
+	"base/serialization"
 	"fmt"
 	"sync"
 
@@ -14,13 +14,14 @@ import (
 type MasterHandler struct {
 	*NetServer
 	shardConnectionChan chan *connection
-	connectedShards     map[string]*ShardConnection
+	shardConnections    map[string]*ShardConnection
 }
 
 type ShardConnection struct {
-	address string
-	id      string
-	stream  *quicStream
+	address  string
+	id       string
+	stream   *quicStream
+	isActive bool
 }
 
 var redisClient *redis.Redis = redis.NewClient()
@@ -35,7 +36,7 @@ func NewMasterHandler() *MasterHandler {
 	return &MasterHandler{
 		NetServer:           server,
 		shardConnectionChan: make(chan *connection),
-		connectedShards:     make(map[string]*ShardConnection),
+		shardConnections:    make(map[string]*ShardConnection),
 	}
 }
 
@@ -60,11 +61,12 @@ func (server *MasterHandler) addToPool(shard *ShardConnection) {
 
 func (server *MasterHandler) removeFromPool(shard *ShardConnection) {
 	redisClient.RemoveFromSet(REDIS_SHARD_KEY, shard.address)
+	delete(server.shardConnections, shard.id)
 }
 
 func (server *MasterHandler) BroadcastChat() {
 	for {
-		for _, shard := range server.connectedShards {
+		for _, shard := range server.shardConnections {
 			Respond(*shard.stream)
 		}
 	}
@@ -72,12 +74,13 @@ func (server *MasterHandler) BroadcastChat() {
 
 func (server *MasterHandler) AcceptStreams() {
 	go func() {
-		for shardJoined := range messageHandler.ShardJoinChan {
-			sourceShard := server.connectedShards[shardJoined.SourceID]
-			sourceShard.address = shardJoined.Address
-			server.addToPool(sourceShard)
-			shardJoinResponse, _ := message.CreateClusterJoinResponseMessage(&common.ClusterJoinResponseMsg{ShardID: sourceShard.id, Pos: common.Pos{X: 3, Y: 5}})
-			sourceShard.stream.SendMessage(shardJoinResponse)
+		for newShard := range messageHandler.ShardJoinChan {
+			shard := server.shardConnections[newShard.SourceID]
+			shard.address = newShard.Address
+			shard.isActive = true
+			server.addToPool(shard)
+			shardJoinResponse, _ := serialization.SerializeClusterJoinResponse(&models.ClusterJoinResponse{ShardID: shard.id, Pos: models.Vector{X: 3, Y: 5}})
+			shard.stream.SendMessage(shardJoinResponse)
 		}
 	}()
 
@@ -95,10 +98,10 @@ func (server *MasterHandler) AcceptStreams() {
 				id:     uuid.New().String(),
 				stream: &quicStream,
 			}
-			server.connectedShards[shardConn.id] = &shardConn
+			server.shardConnections[shardConn.id] = &shardConn
 
 			for {
-				msg, ok := read(stream)
+				msg, ok := read(quicStream)
 				if !ok {
 					server.removeFromPool(&shardConn)
 					fmt.Println("Stream closed")

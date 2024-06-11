@@ -1,18 +1,17 @@
 package main
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
 	"base/network"
 	"base/redis"
+	"base/serialization"
 	"math/rand/v2"
-	"time"
 
 	"capnproto.org/go/capnp/v3"
 )
 
 func createMsg(source string) *capnp.Message {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerId: rand.Int32N(20), Text: source})
+	chatMessage, err := serialization.SerializeChatMessage(models.ChatMessage{PlayerID: rand.Int32N(20), Text: source})
 	if err != nil {
 		return nil
 	}
@@ -30,19 +29,7 @@ func main() {
 		return
 	}
 	client.Connect()
-	// client.ListenReliable()
-
-	for i := 0; i < 5; i++ {
-		go func() {
-			chatMessage := createMsg("stream")
-			unrealiableChatMessage := createMsg("datagram")
-			for j := 0; j < 10; j++ {
-				client.SendReliable(chatMessage)
-				client.SendUnreliable(unrealiableChatMessage)
-				time.Sleep(1 * time.Second)
-			}
-		}()
-	}
+	client.ListenReliable()
 
 	select {}
 }

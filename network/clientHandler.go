@@ -1,7 +1,9 @@
 package network
 
 import (
-	"base/message"
+	models "base/models"
+	"base/network/messageHandler"
+	"base/serialization"
 	"fmt"
 
 	"capnproto.org/go/capnp/v3"
@@ -24,19 +26,35 @@ func NewClientHandler(addr string) *ClientHandler {
 
 func (client *ClientHandler) Connect() {
 	client.OpenStream()
+	msg, err := serialization.SerializeClientConnectionRequest(models.ClientConnectionRequest{})
+	if err != nil {
+		fmt.Println("Error creating message")
+		return
+	}
+	client.SendReliable(msg)
 }
 
 func ListenUnreliable() {
 }
 
 func (client *ClientHandler) SendUnreliable(msg *capnp.Message) {
-	bytes, _ := message.MsgToBytes(msg)
+	bytes, _ := serialization.MsgToBytes(msg)
 	client.quicConnection.SendDatagram(bytes)
 
 }
 
 func (client *ClientHandler) ListenReliable() {
-	go client.Listen()
+	msgHandler := messageHandler.NewMessageHandler()
+	msgHandler.AddHandler(messageHandler.ClientConnectionResponse)
+	// go client.Listen()
+	for {
+		msg, ok := read(client.QuicStream)
+		if !ok {
+			fmt.Println("Stream closed")
+			return
+		}
+		msgHandler.HandleMessage(msg, "shard")
+	}
 }
 
 func (client *ClientHandler) SendReliable(msg *capnp.Message) {
@@ -47,6 +65,4 @@ func (client *ClientHandler) SendReliable(msg *capnp.Message) {
 	if err != nil {
 		fmt.Println("couldn't write to stream")
 	}
-
-	fmt.Println("msg sent")
 }

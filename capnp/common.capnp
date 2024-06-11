@@ -1,7 +1,7 @@
 using Go = import "/go.capnp";
 @0xb81e0a7d72638bf1;
-$Go.package("common");
-$Go.import("base/common");
+$Go.package("capnp");
+$Go.import("base/capnp");
 
 struct GameMessage {
   union {
@@ -12,18 +12,23 @@ struct GameMessage {
   }
 }
 
-struct Position {
-  x @0 :Int32;
-  y @1 :Int32;
+struct Vector {
+  x @0 :Float32;
+  y @1 :Float32;
+}
+
+struct Dimensions {
+  width @0 :Int32;
+  height @1 :Int32;
 }
 
 struct PlayerMove {
-  playerId @0 :Int32;
-  position @1 :Position;
+  playerID @0 :Int32;
+  position @1 :Vector;
 }
 
 struct PlayerAction {
-  playerId @0 :Int32;
+  playerID @0 :Int32;
   action @1 :Text;
 }
 
@@ -32,12 +37,12 @@ struct GameStateUpdate {
 }
 
 struct PlayerState {
-  playerId @0 :Int32;
-  position @1 :Position;
+  playerID @0 :Int32;
+  position @1 :Vector;
 }
 
 struct ChatMessage {
-  playerId @0 :Int32;
+  playerID @0 :Int32;
   text @1 :Text;
 }
 #
@@ -52,6 +57,19 @@ struct ClusterJoinRequest {
 }
 
 struct ClusterJoinResponse {
-  shardId @0 :Text;
-  pos @1 :Position;
+  shardID @0 :Text;
+  pos @1 :Vector;
+}
+
+struct MapData {
+  size @0 :Dimensions;
+}
+
+struct ClientConnectionRequest {
+}
+
+struct ClientConnectionResponse {
+  clientID @0 :Text;
+  position @1 :Vector;
+  mapData @2 :MapData;
 }

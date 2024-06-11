@@ -1,9 +1,9 @@
 package main
 
 import (
-	"base/common"
-	"base/message"
+	models "base/models"
 	"base/network"
+	"base/serialization"
 	"fmt"
 	"math/rand/v2"
 	"time"
@@ -12,7 +12,7 @@ import (
 )
 
 func createMsg(source string) *capnp.Message {
-	chatMessage, err := message.CreateChatMessage(common.Message{PlayerId: rand.Int32N(20), Text: source})
+	chatMessage, err := serialization.SerializeChatMessage(models.ChatMessage{PlayerID: rand.Int32N(20), Text: source})
 	if err != nil {
 		return nil
 	}
@@ -26,7 +26,7 @@ func main() {
 	}
 	shard.MasterClient.OpenStream()
 	go shard.MasterClient.ListenReliable(shard.PoolJoined)
-	msg, err := message.CreateClusterJoinMessage(common.ClusterJoinRequestMsg{Address: shard.GetAddress()})
+	msg, err := serialization.SerializeClusterJoinRequest(models.ClusterJoinRequest{Address: shard.GetAddress()})
 	if err != nil {
 		fmt.Println("Error creating cluster join message")
 		return
